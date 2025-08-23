@@ -7,6 +7,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 public class BackendToolRentApplication {
 
 	public static void main(String[] args) {
+
 		SpringApplication.run(BackendToolRentApplication.class, args);
 	}
 

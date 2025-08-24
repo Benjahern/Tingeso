@@ -3,6 +3,11 @@ package com.example.Backend_ToolRent.model;
 import jakarta.persistence.*;
 import lombok.Data;
 
+import java.util.List;
+
+/**
+ * Class for the workers
+ */
 @Data
 @Entity
 @Table(name = "worker")
@@ -14,7 +19,7 @@ public class WorkerEntity extends UserEntity {
      * 2 for employee
      */
     @Column(name = "rol", nullable = false)
-    private int rol;
+    private List<Integer> rol;
 
     /**
      * Password of the workers, for login

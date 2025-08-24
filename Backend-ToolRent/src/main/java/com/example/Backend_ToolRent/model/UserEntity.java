@@ -4,6 +4,9 @@ package com.example.Backend_ToolRent.model;
 import jakarta.persistence.*;
 import lombok.Data;
 
+/**
+ * user class
+ */
 @Data
 @Entity
 @Table(name = "Users")

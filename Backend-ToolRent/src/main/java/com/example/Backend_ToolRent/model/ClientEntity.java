@@ -1,14 +1,15 @@
 package com.example.Backend_ToolRent.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.Data;
 
 import java.util.List;
 
+/**
+ * Entity client of ToolRent
+ */
 @Data
 @Entity
 @Table(name = "clients")
@@ -49,9 +50,7 @@ public class ClientEntity extends UserEntity {
     /**
      * List of client loans
      */
-    /*
-    @OneToMany(mappedBy = "client")
-    @JsonIgnoreProperties("client")
+    @OneToMany(mappedBy = "client", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
     private List<LoansEntity> loans;
-     */
 }

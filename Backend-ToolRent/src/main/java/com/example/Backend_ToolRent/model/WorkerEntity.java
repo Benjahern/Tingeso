@@ -15,14 +15,13 @@ public class WorkerEntity extends UserEntity {
 
     /**
      * Rol of the user
-     * 1 for admin
-     * 2 for employee
      */
-    @Column(name = "rol", nullable = false)
-    private List<Integer> rol;
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(name = "workerRol")
+    private List<RolEntity> rol;
 
     /**
-     * Password of the workers, for login
+     * Password cof the workers, for login
      */
     @Column(name = "password", nullable = false)
     private String password;

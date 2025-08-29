@@ -4,6 +4,17 @@ import com.example.Backend_ToolRent.model.ClientEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+import java.util.Optional;
+
 @Repository
 public interface ClientRepository extends JpaRepository<ClientEntity, Long> {
+
+    Optional<ClientEntity> findByUserName(String userName);
+
+    List<ClientEntity> findByDebtGreaterThan(double debt);
+
+    List<ClientEntity> findByState(String state);
+
+    Optional<ClientEntity> findByRut(String rut);
 }

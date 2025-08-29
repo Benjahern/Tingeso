@@ -46,11 +46,17 @@ public class LoansEntity {
     @Column(name = "loanEnd", nullable = false)
     private LocalDate loanEnd;
 
+    @Column(name = "price", nullable = false)
+    private double price;
+
     /**
      * Unit of the loan
      */
     @OneToMany(mappedBy = "loan", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference
     private List<LoanUnitEntity> loanUnits;
+
+    @Column(name = "active", nullable = false)
+    private boolean active;
 
 }

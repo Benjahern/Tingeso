@@ -21,7 +21,7 @@ public class WorkerEntity extends UserEntity {
     private List<RolEntity> rol;
 
     /**
-     * Password cof the workers, for login
+     * Password caof the workers, for login
      */
     @Column(name = "password", nullable = false)
     private String password;

@@ -45,7 +45,7 @@ public class ClientEntity extends UserEntity {
      * Debt if applicable
      */
     @Column(name = "debt")
-    private String debt;
+    private double debt;
 
     /**
      * List of client loans

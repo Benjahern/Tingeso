@@ -34,7 +34,7 @@ public class WorkerService {
     }
 
     public WorkerEntity getWorkerByName(String name) {
-        return workerRepo.findByUserName(name).orElseThrow(()-> new EntityNotFoundException("Worker Not Found"));
+        return workerRepo.findByUserNameContainingIgnoreCase(name).orElseThrow(()-> new EntityNotFoundException("Worker Not Found"));
 
     }
 

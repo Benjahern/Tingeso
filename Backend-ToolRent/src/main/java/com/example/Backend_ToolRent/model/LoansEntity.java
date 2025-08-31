@@ -1,6 +1,7 @@
 package com.example.Backend_ToolRent.model;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.Data;
@@ -33,6 +34,11 @@ public class LoansEntity {
     @JoinColumn(name = "clientId", nullable = false)
     @JsonBackReference
     private ClientEntity client;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "storeId", nullable = false)
+    @JsonIgnore
+    private StoreEntity store;
 
     /**
      * Date of the loan start

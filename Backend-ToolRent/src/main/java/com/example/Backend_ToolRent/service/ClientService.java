@@ -35,7 +35,7 @@ public class ClientService {
 
 
     public ClientEntity getClientByName(String name) {
-        return clientRepo.findByUserName(name).orElseThrow(()-> new EntityNotFoundException("Client with name: "+ name + " not found"));
+        return clientRepo.findByUserNameContainingIgnoreCase(name).orElseThrow(()-> new EntityNotFoundException("Client with name: "+ name + " not found"));
     }
 
     @Transactional

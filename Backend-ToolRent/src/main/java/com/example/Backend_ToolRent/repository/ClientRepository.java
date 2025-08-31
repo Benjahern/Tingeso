@@ -10,7 +10,7 @@ import java.util.Optional;
 @Repository
 public interface ClientRepository extends JpaRepository<ClientEntity, Long> {
 
-    Optional<ClientEntity> findByUserName(String userName);
+    Optional<ClientEntity> findByUserNameContainingIgnoreCase(String userName);
 
     List<ClientEntity> findByDebtGreaterThan(double debt);
 

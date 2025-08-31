@@ -36,7 +36,7 @@ public class UserService {
      * @return
      */
     public UserEntity getUserByName(String name){
-        return userRepo.findByUserName(name).orElseThrow(()->new EntityNotFoundException("User Not Found"));
+        return userRepo.findByUserNameContainingIgnoreCase(name).orElseThrow(()->new EntityNotFoundException("User Not Found"));
     }
 
     /**

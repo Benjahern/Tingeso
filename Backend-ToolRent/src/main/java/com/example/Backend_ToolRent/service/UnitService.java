@@ -1,9 +1,12 @@
 package com.example.Backend_ToolRent.service;
 
 import com.example.Backend_ToolRent.model.UnitEntity;
+import com.example.Backend_ToolRent.model.WorkerEntity;
 import com.example.Backend_ToolRent.repository.UnitRepository;
+import com.example.Backend_ToolRent.repository.WorkerRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -11,13 +14,27 @@ import java.util.List;
 public class UnitService {
 
     private final UnitRepository unitRepo;
+    private final WorkerRepository workerRepo;
+    private final KardexService kardexService;
 
-    public UnitService(UnitRepository unitRepo) {
+    public UnitService(UnitRepository unitRepo, WorkerRepository workerRepo, KardexService kardexService) {
         this.unitRepo = unitRepo;
+        this.workerRepo = workerRepo;
+        this.kardexService = kardexService;
     }
 
-    public UnitEntity saveUnit(UnitEntity unitEntity) {
-        return unitRepo.save(unitEntity);
+    @Transactional
+    public UnitEntity createUnit(UnitEntity unit, Long workerId) {
+        WorkerEntity workerEntity = workerRepo.findById(workerId).orElseThrow(() -> new EntityNotFoundException("Worker Not Found"));
+
+        unit.setStatus("Disponible");
+        unit.setCondition("Bueno");
+
+        UnitEntity newUnit = unitRepo.save(unit);
+
+        kardexService.registerMovement(newUnit, "INGRESO_INVENTARIO", workerEntity, null, "Registro de unidad en nel sistema.");
+
+        return newUnit;
     }
 
     public UnitEntity findUnitById(Long unitId) {

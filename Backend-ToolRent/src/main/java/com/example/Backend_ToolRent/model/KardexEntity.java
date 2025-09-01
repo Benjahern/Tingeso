@@ -19,17 +19,21 @@ public class KardexEntity {
     @Column(name = "kardexId", nullable = false, unique = true)
     private Long kardexId;
 
-    @OneToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "unitId", nullable = false)
     private UnitEntity unit;
 
-    @OneToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "storeId", nullable = false)
     private StoreEntity store;
 
-    @OneToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "workerId", nullable = false)
     private WorkerEntity worker;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "loanId")
+    private LoansEntity loan;
 
     @Column(name = "movement", nullable = false)
     private String movement;

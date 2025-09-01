@@ -1,9 +1,7 @@
 package com.example.Backend_ToolRent.service;
 
 import com.example.Backend_ToolRent.model.*;
-import com.example.Backend_ToolRent.repository.ClientRepository;
-import com.example.Backend_ToolRent.repository.LoansRepository;
-import com.example.Backend_ToolRent.repository.UnitRepository;
+import com.example.Backend_ToolRent.repository.*;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,11 +19,16 @@ public class LoansService {
     private final LoansRepository loansRepo;
     private final UnitRepository unitRepo;
     private final ClientRepository clientRepo;
+    private final WorkerRepository workerRepo;
+    private final KardexService kardexService;
 
-    public LoansService(LoansRepository loansRepo, UnitRepository unitRepo, ClientRepository clientRepo) {
+
+    public LoansService(LoansRepository loansRepo, UnitRepository unitRepo, ClientRepository clientRepo, WorkerRepository workerRepo, KardexRepository kardexRepo, KardexService kardexService) {
         this.loansRepo = loansRepo;
         this.unitRepo = unitRepo;
         this.clientRepo = clientRepo;
+        this.workerRepo = workerRepo;
+        this.kardexService = kardexService;
     }
 
     public LoansEntity saveLoans(LoansEntity loansEntity) {
@@ -65,7 +68,8 @@ public class LoansService {
     }
 
     @Transactional
-    public LoansEntity createLoan(LoansEntity loansEntity) {
+    public LoansEntity createLoan(LoansEntity loansEntity, Long workerId) {
+        WorkerEntity worker = workerRepo.findById(workerId).orElseThrow(() -> new EntityNotFoundException("WorkerEntity not found"));
         Long clientId = loansEntity.getClient().getUserId();
         ClientEntity client = clientRepo.findById(clientId)
                 .orElseThrow(() -> new EntityNotFoundException("Cliente no encontrado con ID: " + clientId));
@@ -131,12 +135,18 @@ public class LoansService {
             clientRepo.save(client);
         }
 
+        for (LoanUnitEntity loanUnit : newLoan.getLoanUnits()) {
+            String comment = "Salida en préstamo Id: " + newLoan.getLoanId() + "para el cliente Id: " + clientId;
+            kardexService.registerMovement(loanUnit.getUnit(), "Salida_Prestamo", worker, newLoan, comment);
+        }
+
         return loansRepo.save(newLoan);
 
     }
 
-    public LoansEntity returnLoan(Long loanId, Map<Long, String> unitCondition) {
+    public LoansEntity returnLoan(Long loanId,Long workerId, Map<Long, String> unitCondition) {
 
+        WorkerEntity worker = workerRepo.findById(workerId).orElseThrow(() -> new EntityNotFoundException("WorkerEntity not found"));
         LoansEntity loan = getLoansById(loanId);
 
         if(!loan.isActive()){
@@ -184,6 +194,19 @@ public class LoansService {
             if (loansRepo.countByClientIdAndActiveTrue(client.getUserId()) - 1 < 5) {
                 client.setState("Activo");
             }
+        }
+
+        for (LoanUnitEntity loanUnit : loan.getLoanUnits()) {
+            String newCondition = unitCondition.get(loanUnit.getUnit().getUnitId());
+            String comment = "Devolución del préstamo ID: " + loan.getLoanId() + ". Condición de entrega: " + newCondition;
+
+            kardexService.registerMovement(
+                    loanUnit.getUnit(),
+                    "ENTRADA_DEVOLUCION",
+                    worker,
+                    loan,
+                    comment
+            );
         }
 
         return loansRepo.save(loan);

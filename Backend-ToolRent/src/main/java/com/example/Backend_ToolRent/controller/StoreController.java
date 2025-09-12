@@ -4,6 +4,7 @@ import com.example.Backend_ToolRent.entity.StoreEntity;
 import com.example.Backend_ToolRent.service.StoreService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -24,6 +25,7 @@ public class StoreController {
 
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<StoreEntity> getStoreById(@PathVariable Long id) {
         try {
             StoreEntity store = storeService.getStoreById(id);
@@ -35,6 +37,7 @@ public class StoreController {
 
 
     @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<StoreEntity> createStore(@RequestBody StoreEntity storeEntity) {
         StoreEntity savedStore = storeService.saveStore(storeEntity);
         return new ResponseEntity<>(savedStore, HttpStatus.CREATED);

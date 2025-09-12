@@ -1,0 +1,18 @@
+{
+  "realm": "ToolRent-realm",
+  "enabled": true,
+  "clients": [
+    {
+      "clientId": "toolrent-backend",
+      "secret": "BmoZNTojUGixIvOyK4RcIgj0zLcQMCe0",
+      "enabled": true,
+      "publicClient": false,
+      "redirectUris": [
+        "http://localhost:8090/*"
+      ],
+      "protocol": "openid-connect",
+      "directAccessGrantsEnabled": true,
+      "standardFlowEnabled": true
+    }
+  ]
+}

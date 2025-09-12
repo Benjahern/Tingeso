@@ -1,0 +1,53 @@
+
+services:
+  postgres:
+    image: postgres:15
+    container_name: toolrent-postgres
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASS}
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:22.0
+    container_name: toolrent-keycloak
+    command: start-dev --import-realm
+    environment:
+      KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN_USER}
+      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASS}
+      KC_DB: postgres
+      KC_DB_URL_HOST: postgres
+      KC_DB_URL_DATABASE: ${DB_NAME}
+      KC_DB_USERNAME: ${DB_USER}
+      KC_DB_PASSWORD: ${DB_PASS}
+      KC_DB_SCHEMA: public
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./keycloak-realm:/opt/keycloak/data/import
+    depends_on:
+      - postgres
+
+  toolrent-backend:
+    build: .
+    image: toolrent-backend
+    container_name: toolrent-backend
+    ports:
+      - "8090:8090"
+    environment:
+      DB_URL: jdbc:postgresql://postgres:5432/${DB_NAME}
+      DB_USER: ${DB_USER}
+      DB_PASS: ${DB_PASS}
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER-URI: http://localhost:8080/realms/ToolRent-realm
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK-SET-URI: http://keycloak:8080/realms/ToolRent-realm/protocol/openid-connect/certs
+    depends_on:
+      - postgres
+      - keycloak
+volumes:
+  postgres_data:
+
+

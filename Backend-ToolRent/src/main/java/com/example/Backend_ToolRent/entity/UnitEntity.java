@@ -1,4 +1,4 @@
-package com.example.Backend_ToolRent.model;
+package com.example.Backend_ToolRent.entity;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;

@@ -1,11 +1,10 @@
 package com.example.Backend_ToolRent.service;
 
-import com.example.Backend_ToolRent.model.RolEntity;
-import com.example.Backend_ToolRent.model.WorkerEntity;
+import com.example.Backend_ToolRent.entity.RolEntity;
+import com.example.Backend_ToolRent.entity.WorkerEntity;
 import com.example.Backend_ToolRent.repository.WorkerRepository;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -20,7 +19,6 @@ public class WorkerService {
     }
 
     @Transactional
-    @PreAuthorize("hasRole('ADMIN')")
     public WorkerEntity addWorker(WorkerEntity workerEntity) {
         return workerRepo.save(workerEntity);
     }
@@ -56,6 +54,10 @@ public class WorkerService {
 
     public List<WorkerEntity> getWorkerByStore(Long id) {
         return workerRepo.findByStore_StoreId(id);
+    }
+
+    public void deleteWorkerByStore(Long id) {
+        workerRepo.deleteById(id);
     }
 
 }

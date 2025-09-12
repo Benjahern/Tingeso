@@ -1,6 +1,6 @@
 package com.example.Backend_ToolRent.service;
 
-import com.example.Backend_ToolRent.model.*;
+import com.example.Backend_ToolRent.entity.*;
 import com.example.Backend_ToolRent.repository.KardexRepository;
 import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
@@ -31,6 +31,10 @@ public class KardexService {
 
     public List<KardexEntity> getHistoryForUnit(Long unitId){
         return kardexRepository.findByUnit_UnitIdOrderByDateDesc(unitId);
+    }
+
+    public List<KardexEntity> getAllKardex(){
+        return kardexRepository.findAll();
     }
 
 }

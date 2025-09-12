@@ -1,11 +1,10 @@
 package com.example.Backend_ToolRent.service;
 
-import com.example.Backend_ToolRent.model.ToolEntity;
+import com.example.Backend_ToolRent.entity.ToolEntity;
 import com.example.Backend_ToolRent.repository.ToolRepository;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -37,8 +36,14 @@ public class ToolService {
     }
 
     @Transactional
-    public ToolEntity updateTool(ToolEntity toolEntity) {
-        return toolRepo.save(toolEntity);
+    public ToolEntity updateTool(Long toolId, ToolEntity toolDetails) {
+        ToolEntity toolToUpdate = getToolById(toolId);
+
+        toolToUpdate.setToolName(toolDetails.getToolName());
+        toolToUpdate.setDescription(toolDetails.getDescription());
+        toolToUpdate.setCategory(toolDetails.getCategory());
+
+        return toolRepo.save(toolToUpdate);
     }
 
     public ToolEntity getToolByName(String toolName) {
@@ -49,14 +54,14 @@ public class ToolService {
     public ToolEntity setDailyPrice(Long id, Double dailyPrice) {
         ToolEntity toolEntity = getToolById(id);
         toolEntity.setDailyPrice(dailyPrice);
-        return updateTool(toolEntity);
+        return toolRepo.save(toolEntity);
     }
 
     @Transactional
     public ToolEntity setReplacementValue(Long id, Double replacementValue) {
         ToolEntity toolEntity = getToolById(id);
         toolEntity.setReplacementValue(replacementValue);
-        return updateTool(toolEntity);
+        return toolRepo.save(toolEntity);
     }
 
 

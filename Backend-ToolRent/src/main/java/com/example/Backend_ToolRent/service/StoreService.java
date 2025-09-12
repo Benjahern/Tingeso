@@ -1,6 +1,6 @@
 package com.example.Backend_ToolRent.service;
 
-import com.example.Backend_ToolRent.model.StoreEntity;
+import com.example.Backend_ToolRent.entity.StoreEntity;
 import com.example.Backend_ToolRent.repository.StoreRepository;
 import org.springframework.security.access.prepost.PreAuthorize;
 

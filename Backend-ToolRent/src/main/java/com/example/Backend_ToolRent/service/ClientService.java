@@ -1,7 +1,6 @@
 package com.example.Backend_ToolRent.service;
 
-import com.example.Backend_ToolRent.model.ClientEntity;
-import com.example.Backend_ToolRent.model.LoansEntity;
+import com.example.Backend_ToolRent.entity.ClientEntity;
 import com.example.Backend_ToolRent.repository.ClientRepository;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;

@@ -1,4 +1,4 @@
-package com.example.Backend_ToolRent.model;
+package com.example.Backend_ToolRent.entity;
 
 
 import jakarta.persistence.*;

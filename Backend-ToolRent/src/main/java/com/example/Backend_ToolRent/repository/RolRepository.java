@@ -1,6 +1,6 @@
 package com.example.Backend_ToolRent.repository;
 
-import com.example.Backend_ToolRent.model.RolEntity;
+import com.example.Backend_ToolRent.entity.RolEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

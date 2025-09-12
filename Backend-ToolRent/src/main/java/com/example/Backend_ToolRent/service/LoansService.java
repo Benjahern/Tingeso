@@ -1,6 +1,6 @@
 package com.example.Backend_ToolRent.service;
 
-import com.example.Backend_ToolRent.model.*;
+import com.example.Backend_ToolRent.entity.*;
 import com.example.Backend_ToolRent.repository.*;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
@@ -31,10 +31,6 @@ public class LoansService {
         this.kardexService = kardexService;
     }
 
-    public LoansEntity saveLoans(LoansEntity loansEntity) {
-        return loansRepo.save(loansEntity);
-    }
-
     public LoansEntity getLoansById(Long id) {
         return loansRepo.findById(id).orElseThrow(() -> new EntityNotFoundException("LoansEntity not found"));
     }
@@ -43,8 +39,8 @@ public class LoansService {
         return loansRepo.findAll();
     }
 
-    public List<LoansEntity> getLoansByUserId(Long userId) {
-        return loansRepo.findByUserId(userId);
+    public List<LoansEntity> getLoansByClientId(Long userId) {
+        return loansRepo.findByClient_UserId(userId);
     }
 
     public List<LoansEntity> getByLoanStart(LocalDate loanStart) {
@@ -59,12 +55,14 @@ public class LoansService {
         return loansRepo.findByLoanEndBeforeAndActiveTrue(date);
     }
 
-    public List<LoansEntity> getLoansByActive(boolean isActive){
-        return loansRepo.findByActive(isActive);
+    public List<LoansEntity> getLoansByActive(){
+        return loansRepo.findByActive(true);
     }
 
+    public List<LoansEntity> getLoansByInactive(){return loansRepo.findByActive(false);}
+
     public long countLoansActive(Long clientId){
-        return loansRepo.countByClientIdAndActiveTrue(clientId);
+        return loansRepo.countByClient_UserIdAndActiveTrue(clientId);
     }
 
     @Transactional
@@ -191,7 +189,7 @@ public class LoansService {
 
         }
         if ("Restringido".equalsIgnoreCase(client.getState())) {
-            if (loansRepo.countByClientIdAndActiveTrue(client.getUserId()) - 1 < 5) {
+            if (loansRepo.countByClient_UserIdAndActiveTrue(client.getUserId()) - 1 < 5) {
                 client.setState("Activo");
             }
         }

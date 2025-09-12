@@ -1,7 +1,7 @@
 package com.example.Backend_ToolRent.service;
 
-import com.example.Backend_ToolRent.model.UnitEntity;
-import com.example.Backend_ToolRent.model.WorkerEntity;
+import com.example.Backend_ToolRent.entity.UnitEntity;
+import com.example.Backend_ToolRent.entity.WorkerEntity;
 import com.example.Backend_ToolRent.repository.UnitRepository;
 import com.example.Backend_ToolRent.repository.WorkerRepository;
 import jakarta.persistence.EntityNotFoundException;

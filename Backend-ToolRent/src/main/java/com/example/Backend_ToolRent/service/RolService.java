@@ -1,6 +1,6 @@
 package com.example.Backend_ToolRent.service;
 
-import com.example.Backend_ToolRent.model.RolEntity;
+import com.example.Backend_ToolRent.entity.RolEntity;
 import com.example.Backend_ToolRent.repository.RolRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;

@@ -1,6 +1,6 @@
 package com.example.Backend_ToolRent.service;
 
-import com.example.Backend_ToolRent.model.UserEntity;
+import com.example.Backend_ToolRent.entity.UserEntity;
 import com.example.Backend_ToolRent.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;

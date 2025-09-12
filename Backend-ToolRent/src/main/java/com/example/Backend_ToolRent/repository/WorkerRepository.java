@@ -1,8 +1,6 @@
 package com.example.Backend_ToolRent.repository;
 
-import com.example.Backend_ToolRent.model.ClientEntity;
-import com.example.Backend_ToolRent.model.WorkerEntity;
-import org.hibernate.jdbc.Work;
+import com.example.Backend_ToolRent.entity.WorkerEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

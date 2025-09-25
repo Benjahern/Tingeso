@@ -10,6 +10,8 @@ import org.springframework.web.server.ResponseStatusException;
 
 import jakarta.persistence.EntityNotFoundException;
 
+import java.util.Map;
+
 
 @RestController
 @RequestMapping("/api/stores")
@@ -47,7 +49,9 @@ public class StoreController {
     @PutMapping("/{id}/daily-fine")
     public ResponseEntity<StoreEntity> updateDailyFine(
             @PathVariable Long id,
-            @RequestParam int newFine) {
+            @RequestBody Map<String, Integer> pay) {
+
+        Integer newFine = pay.get("newFine");
         try {
             StoreEntity updatedStore = storeService.updateDailyFine(id, newFine);
             return ResponseEntity.ok(updatedStore);

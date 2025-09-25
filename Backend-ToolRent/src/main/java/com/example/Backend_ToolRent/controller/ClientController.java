@@ -9,6 +9,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/clients")
@@ -81,19 +82,25 @@ public class ClientController {
 
     @PostMapping("/{id}/debt/add")
     @PreAuthorize("hasAnyRole('ADMIN','EMPLOYEE')")
-    public ResponseEntity<ClientEntity> addDebtToClient(@PathVariable Long id, @RequestParam Double amount) {
+    public ResponseEntity<ClientEntity> addDebtToClient(
+            @PathVariable Long id,
+            @RequestBody Map<String, Double> body) {
+        Double amount = body.get("amount");
         return ResponseEntity.ok(clientService.addDebt(id, amount));
     }
 
+
     @PostMapping("/{id}/debt/pay")
     @PreAuthorize("hasAnyRole('ADMIN','EMPLOYEE')")
-    public ResponseEntity<ClientEntity> payDebtForClient(@PathVariable Long id, @RequestParam Double amount) {
+    public ResponseEntity<ClientEntity> payDebtForClient(@PathVariable Long id, @RequestBody Map<String, Double> body) {
+        Double amount = body.get("amount");
         return ResponseEntity.ok(clientService.payDebt(id, amount));
     }
 
     @PutMapping("/{id}/state")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<ClientEntity> updateClientState(@PathVariable Long id, @RequestParam String newState) {
+    public ResponseEntity<ClientEntity> updateClientState(@PathVariable Long id, @RequestBody Map<String, String> body) {
+        String newState = body.get("state");
         return ResponseEntity.ok(clientService.setState(id, newState));
     }
 

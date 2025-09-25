@@ -11,4 +11,6 @@ public interface KardexRepository extends JpaRepository<KardexEntity, Long> {
 
     List<KardexEntity> findByUnit_UnitIdOrderByDateDesc(Long unitId);
 
+    List<KardexEntity> findByUnit_Tool_ToolIdOrderByDateDesc(Long toolId);
+
 }

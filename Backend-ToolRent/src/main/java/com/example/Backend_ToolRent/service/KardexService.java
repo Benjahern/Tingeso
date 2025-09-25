@@ -37,4 +37,7 @@ public class KardexService {
         return kardexRepository.findAll();
     }
 
+    public List<KardexEntity> getHistoryForTool(Long toolId){
+        return kardexRepository.findByUnit_Tool_ToolIdOrderByDateDesc(toolId);
+    }
 }

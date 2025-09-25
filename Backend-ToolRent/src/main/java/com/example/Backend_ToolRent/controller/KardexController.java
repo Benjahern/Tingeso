@@ -32,4 +32,12 @@ public class KardexController {
         List<KardexEntity> history = kardexService.getAllKardex();
         return ResponseEntity.ok(history);
     }
+
+    @GetMapping("/history/tool/{toolId}")
+    @PreAuthorize("hasAnyRole('ADMIN','EMPLOYEE')")
+    public ResponseEntity<List<KardexEntity>> getKardexHistoryForTool(@PathVariable Long toolId) {
+        List<KardexEntity> history = kardexService.getHistoryForTool(toolId);
+        return ResponseEntity.ok(history);
+    }
+
 }

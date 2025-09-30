@@ -17,7 +17,6 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/loans")
-@CrossOrigin("*")
 public class
 LoanController {
 

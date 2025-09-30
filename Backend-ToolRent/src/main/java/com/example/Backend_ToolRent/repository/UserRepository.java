@@ -9,7 +9,7 @@ import java.util.Optional;
 @Repository
 public interface UserRepository extends JpaRepository<UserEntity, Long> {
 
-    Optional<UserEntity> findByUserNameContainingIgnoreCase(String userName);
+    Optional<UserEntity> findByNameContainingIgnoreCase(String userName);
 
     Optional<UserEntity> findByMail(String mail);
 

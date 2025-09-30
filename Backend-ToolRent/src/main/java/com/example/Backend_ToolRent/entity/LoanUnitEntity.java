@@ -29,7 +29,7 @@ public class LoanUnitEntity {
      */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "loanId", nullable = false)
-    @JsonBackReference
+    @JsonBackReference("loan-loanunit")
     private LoansEntity loan;
 
     /**
@@ -37,7 +37,7 @@ public class LoanUnitEntity {
      */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "unitId", nullable = false)
-    @JsonBackReference
+    @JsonBackReference("unit-loanunit")
     private UnitEntity unit;
 
     /**

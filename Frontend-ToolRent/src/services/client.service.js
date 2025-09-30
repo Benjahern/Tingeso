@@ -16,8 +16,8 @@ const searchClient = (searchType, query) => {
     return httpClient.get(`api/clients/search?${searchType}=${query}`);
 }
 
-const updateClient = (id, data) => {
-    return httpClient.put(`api/clients/${id}`, data);
+const updateClient = (id, client) => {
+    return httpClient.put(`api/clients/${id}`, client);
 }
 
 const deleteClient = id => {

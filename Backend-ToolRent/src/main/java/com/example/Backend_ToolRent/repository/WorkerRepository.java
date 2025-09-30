@@ -10,7 +10,7 @@ import java.util.Optional;
 @Repository
 public interface WorkerRepository extends JpaRepository<WorkerEntity, Long> {
 
-    Optional<WorkerEntity> findByUserNameContainingIgnoreCase(String userName);
+    Optional<WorkerEntity> findByNameContainingIgnoreCase(String userName);
 
     List<WorkerEntity> findByStore_StoreId(Long storeId);
 

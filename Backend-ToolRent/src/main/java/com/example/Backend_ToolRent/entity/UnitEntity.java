@@ -51,7 +51,7 @@ public class UnitEntity {
      * loan history
      */
     @OneToMany(mappedBy = "unit", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonManagedReference
+    @JsonManagedReference("unit-loanunit")
     private List<LoanUnitEntity> loanUnits;
 
 }

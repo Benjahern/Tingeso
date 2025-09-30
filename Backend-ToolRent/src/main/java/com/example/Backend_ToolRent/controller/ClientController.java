@@ -13,7 +13,6 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/clients")
-@CrossOrigin("*")
 public class ClientController {
 
     private final ClientService clientService;
@@ -48,13 +47,16 @@ public class ClientController {
     public ResponseEntity<?> searchClients(@RequestParam(required = false) String name, @RequestParam(required = false) String rut, @RequestParam(required = false) String state) {
 
         if (name != null) {
-            return ResponseEntity.ok(clientService.getClientByName(name));
+            List<ClientEntity> clients = clientService.getClientByName(name);
+            return ResponseEntity.ok(clients);
         }
         if (rut != null) {
-            return ResponseEntity.ok(clientService.getClientsByRut(rut));
+            List<ClientEntity> clients = clientService.getClientsByRut(rut);
+            return ResponseEntity.ok(clients);
         }
         if (state != null) {
-            return ResponseEntity.ok(clientService.getClientsByState(state));
+            List<ClientEntity> clients = clientService.getClientsByState(state);
+            return ResponseEntity.ok(clients);
         }
         return ResponseEntity.badRequest().body("Por favor, proporcione un parámetro de búsqueda (name, rut, o state).");
     }
@@ -63,7 +65,7 @@ public class ClientController {
     @PreAuthorize("hasAnyRole('ADMIN','EMPLOYEE')")
     public ResponseEntity<ClientEntity> updateClient(@PathVariable Long id, @RequestBody ClientEntity clientDetails) {
         clientDetails.setUserId(id); // Asegura que el ID sea el correcto
-        ClientEntity updatedClient = clientService.updateClient(clientDetails);
+        ClientEntity updatedClient = clientService.updateClient(id, clientDetails);
         return ResponseEntity.ok(updatedClient);
     }
 

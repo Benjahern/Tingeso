@@ -17,13 +17,13 @@ public class ClientEntity extends UserEntity {
     /**
      * Phone number of the client
      */
-    @Column(name = "phoneNumber", nullable = false)
+    @Column(name = "phone", nullable = false)
     private String phone;
 
     /**
      * Address of the client
      */
-    @Column(name = "addrress")
+    @Column(name = "address")
     private String address;
 
     /**
@@ -50,6 +50,6 @@ public class ClientEntity extends UserEntity {
      * List of client loans
      */
     @OneToMany(mappedBy = "client", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonManagedReference
+    @JsonManagedReference("client-loans")
     private List<LoansEntity> loans;
 }

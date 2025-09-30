@@ -9,7 +9,7 @@ import lombok.Data;
  */
 @Data
 @Entity
-@Table(name = "Users")
+@Table(name = "users")
 @Inheritance(strategy = InheritanceType.JOINED)
 public abstract class UserEntity {
 
@@ -25,7 +25,7 @@ public abstract class UserEntity {
      * Name of the user
      */
     @Column(name = "name", nullable = false)
-    private String userName;
+    private String name;
 
     /**
      * Mail of the user

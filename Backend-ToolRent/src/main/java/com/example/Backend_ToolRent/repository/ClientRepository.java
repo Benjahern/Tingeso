@@ -10,11 +10,11 @@ import java.util.Optional;
 @Repository
 public interface ClientRepository extends JpaRepository<ClientEntity, Long> {
 
-    Optional<ClientEntity> findByUserNameContainingIgnoreCase(String userName);
+    List<ClientEntity> findByNameContainingIgnoreCase(String userName);
 
     List<ClientEntity> findByDebtGreaterThan(double debt);
 
     List<ClientEntity> findByState(String state);
 
-    Optional<ClientEntity> findByRut(String rut);
+    List<ClientEntity> findByRut(String rut);
 }

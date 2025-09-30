@@ -3,6 +3,8 @@ import './App.css'
 import { Routes } from 'react-router-dom';
 import { BrowserRouter as Router, Route } from 'react-router-dom';
 import HomePage from './components/HomePage';
+import ClientPage from './components/ClientPage';
+import ClientAdd from './components/ClientAdd';
 import Sidebar from './components/Sidebar';
 import { useKeycloak } from '@react-keycloak/web';
 
@@ -35,10 +37,16 @@ function App() {
 
   return (
     <Router>
-      <div className="container">
+      <div className="d-flex">
         <Sidebar />
         <Routes>
           <Route path="/home" element={<PrivateRoute element={<HomePage />} rolesAllowed={["EMPLOYEE", "ADMIN"]} />} />
+
+          <Route path="/clients" element={<PrivateRoute element={<ClientPage/>} rolesAllowed={["EMPLOYEE", "ADMIN"]} />} />
+
+          <Route path="/clients/add/:id" element={<PrivateRoute element={<ClientAdd />} rolesAllowed={["EMPLOYEE", "ADMIN"]} />} />
+
+          <Route path="/clients/add" element={<PrivateRoute element={<ClientAdd />} rolesAllowed={["EMPLOYEE", "ADMIN"]} />} />
         </Routes>
       </div>
     </Router>

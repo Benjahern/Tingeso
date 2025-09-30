@@ -33,13 +33,26 @@ public class ClientService {
     }
 
 
-    public ClientEntity getClientByName(String name) {
-        return clientRepo.findByUserNameContainingIgnoreCase(name).orElseThrow(()-> new EntityNotFoundException("Client with name: "+ name + " not found"));
+    public List<ClientEntity> getClientByName(String name) {
+        return clientRepo.findByNameContainingIgnoreCase(name);
     }
 
     @Transactional
-    public ClientEntity updateClient(ClientEntity client) {
-        return clientRepo.save(client);
+    public ClientEntity updateClient(Long id, ClientEntity clientDetails) {
+        // 1. Busca el cliente existente en la base de datos
+        ClientEntity existingClient = clientRepo.findById(id).orElseThrow(()-> new EntityNotFoundException("Client with id: "+ id + " not found"));
+
+        // 2. Actualiza los campos del cliente existente con los nuevos datos
+        existingClient.setName(clientDetails.getName());
+        existingClient.setRut(clientDetails.getRut());
+        existingClient.setMail(clientDetails.getMail());
+        existingClient.setPhone(clientDetails.getPhone());
+        existingClient.setAddress(clientDetails.getAddress());
+        existingClient.setState(clientDetails.getState());
+        existingClient.setDebt(clientDetails.getDebt());
+
+        // 3. Guarda el cliente actualizado en la base de datos
+        return clientRepo.save(existingClient);
     }
 
     @Transactional
@@ -87,8 +100,8 @@ public class ClientService {
         throw new EntityNotFoundException("Client with id: "+ id + " not found");
     }
 
-    public ClientEntity getClientsByRut(String rut){
-        return clientRepo.findByRut(rut).orElseThrow(()-> new EntityNotFoundException("Client with id: "+ rut+ " not found"));
+    public List<ClientEntity> getClientsByRut(String rut){
+        return clientRepo.findByRut(rut);
     }
 
     @Transactional

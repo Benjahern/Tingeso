@@ -1,5 +1,5 @@
 import axios from "axios";
-import keycloak from ".services/keycloak";
+import keycloak from "./services/keycloak";
 
 const toolRentBackendPort = import.meta.env.VITE_TOOLRENT_BACKEND;
 

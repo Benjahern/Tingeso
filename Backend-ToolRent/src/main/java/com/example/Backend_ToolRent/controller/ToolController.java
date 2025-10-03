@@ -1,11 +1,14 @@
 package com.example.Backend_ToolRent.controller;
 
 import com.example.Backend_ToolRent.entity.ToolEntity;
+import com.example.Backend_ToolRent.service.FileStorageService;
 import com.example.Backend_ToolRent.service.ToolService;
+import com.example.Backend_ToolRent.service.UserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -15,9 +18,11 @@ import java.util.List;
 public class ToolController {
 
     private final ToolService toolService;
+    private final FileStorageService fileService;
 
-    public ToolController(ToolService toolService) {
+    public ToolController(ToolService toolService, FileStorageService fileService) {
         this.toolService = toolService;
+        this.fileService = fileService;
     }
 
     @GetMapping
@@ -75,4 +80,24 @@ public class ToolController {
         toolService.deleteToolById(id);
         return ResponseEntity.noContent().build();
     }
+
+    @PostMapping("/{id}/image")
+    public ResponseEntity<?> uploadImage(@PathVariable Long id, @RequestParam("file") MultipartFile file) {
+        try {
+            ToolEntity tool = toolService.getToolById(id);
+            // opcional: validar tipo MIME / extensión aquí
+            String publicPath = fileService.store(file, "herramientas");
+            // borrar anterior si existe
+            if (tool.getImagePath() != null) {
+                fileService.delete(tool.getImagePath());
+            }
+            tool.setImagePath(publicPath);
+            toolService.saveTool(tool);
+            return ResponseEntity.ok(tool);
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("Error al subir imagen: " + e.getMessage());
+        }
+    }
+
+
 }

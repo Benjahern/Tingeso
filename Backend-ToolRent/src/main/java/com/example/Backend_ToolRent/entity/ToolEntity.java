@@ -60,7 +60,7 @@ public class ToolEntity {
      * Url of the imagen tool
      * To be seen, maybe I'll delete it.
      */
-    @Column(name = "image")
+    @Column(name = "imagen_path")
     private String imagePath;
 
 }

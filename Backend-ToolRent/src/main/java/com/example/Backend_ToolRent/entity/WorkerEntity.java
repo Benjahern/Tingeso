@@ -1,5 +1,6 @@
 package com.example.Backend_ToolRent.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -8,6 +9,7 @@ import java.util.List;
 /**
  * Class for the workers
  */
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 @Data
 @Entity
 @Table(name = "worker")
@@ -19,6 +21,9 @@ public class WorkerEntity extends UserEntity {
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "workerRol")
     private List<RolEntity> rol;
+
+    @Column(name = "keycloakId")
+    public String keycloakId;
 
     /**
      * Password caof the workers, for login

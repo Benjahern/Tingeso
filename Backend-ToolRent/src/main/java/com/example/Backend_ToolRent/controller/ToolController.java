@@ -47,14 +47,14 @@ public class ToolController {
     }
 
     @PostMapping
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN','EMPLOYEE')")
     public ResponseEntity<ToolEntity> createTool(@RequestBody ToolEntity tool) {
         ToolEntity newTool = toolService.saveTool(tool);
         return ResponseEntity.status(HttpStatus.CREATED).body(newTool);
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN','EMPLOYEE')")
     public ResponseEntity<ToolEntity> updateTool(@PathVariable Long id, @RequestBody ToolEntity toolDetails) {
         ToolEntity updatedTool = toolService.updateTool(id, toolDetails);
         return ResponseEntity.ok(updatedTool);

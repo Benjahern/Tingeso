@@ -1,13 +1,16 @@
 package com.example.Backend_ToolRent.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.Data;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 /**
  * This class is for store movements, generating traceability
  */
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 @Data
 @Entity
 @Table(name = "inventory")
@@ -23,7 +26,7 @@ public class KardexEntity {
     @JoinColumn(name = "unitId", nullable = false)
     private UnitEntity unit;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "storeId", nullable = false)
     private StoreEntity store;
 
@@ -40,6 +43,19 @@ public class KardexEntity {
 
     @Column(name = "date", nullable = false)
     private LocalDateTime date;
+
+    // 1 for entrence, -1 for exit
+    @Column(name = "type", nullable = false)
+    private Integer type;
+
+    @Column(name = "stockBalance", nullable = false)
+    private Integer stockBalance;
+
+    @Column(name = "unitCost")
+    private BigDecimal unitCost;
+
+    @Column(name = "totalValue")
+    private BigDecimal totalValue;
 
     @Column(name = "comment")
     private String comment;

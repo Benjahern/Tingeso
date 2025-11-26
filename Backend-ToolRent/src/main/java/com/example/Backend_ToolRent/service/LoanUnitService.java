@@ -21,6 +21,10 @@ public class LoanUnitService {
                 .orElseThrow(() -> new EntityNotFoundException("LoanUnit no encontrado con ID: " + id));
     }
 
+    public LoanUnitEntity createLoanUnit(LoanUnitEntity loanUnitEntity) {
+        return loanUnitRepo.save(loanUnitEntity);
+    }
+
     public List<LoanUnitEntity> getHistoryForUnit(Long unitId) {
         return loanUnitRepo.findByUnit_UnitId(unitId);
     }

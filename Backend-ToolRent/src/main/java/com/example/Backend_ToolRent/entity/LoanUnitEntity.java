@@ -1,6 +1,8 @@
 package com.example.Backend_ToolRent.entity;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import jakarta.persistence.Table;
 import lombok.Data;
@@ -11,6 +13,7 @@ import java.time.LocalDate;
 /**
  * This class is to view the loans by tool, allowing you to see the statuses one by one of the deliveries
  */
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 @Data
 @Entity
 @Table(name = "loanUnit")
@@ -35,9 +38,8 @@ public class LoanUnitEntity {
     /**
      * Relation loan with unit
      */
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "unitId", nullable = false)
-    @JsonBackReference("unit-loanunit")
     private UnitEntity unit;
 
     /**

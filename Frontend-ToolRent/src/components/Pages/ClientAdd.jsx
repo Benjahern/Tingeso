@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
-import clientService from "../services/client.service";
+import clientService from "../../services/client.service";
 import React from "react";
 import Form from 'react-bootstrap/Form';
+import { InputGroup } from "react-bootstrap";
 
 const ClientAdd = () => {
     const [rut, setRut] = useState("");
@@ -23,9 +24,7 @@ const ClientAdd = () => {
         e.preventDefault();
         const client = {rut, name, phone, mail, address, state, debt };
         
-            console.log('=== DEBUG INFO ===');
-            console.log('Client object:', client);
-            console.log('Client as JSON:', JSON.stringify(client));
+            // removed verbose debug logs
             console.log('ID parameter:', id);
                 
                 
@@ -97,12 +96,7 @@ const ClientAdd = () => {
 
     const handleDebtChange = (e) => {
         const value = e.target.value;
-        if (id) {
-            const confirmChangeDebt = window.confirm('¿Esta seguro que desea cambiar la deuda de este cliente?');
-            if (!confirmChangeDebt) {
-                return;
-            }
-        }
+        
         setDebt(value);
     };
 
@@ -171,13 +165,16 @@ const ClientAdd = () => {
                     <Form.Label>Estado</Form.Label>
                     <Form.Select value={state} onChange={handleStateChange}>
                         <option value="ACTIVO">ACTIVO</option>
-                        <option value="INACTIVO">INACTIVO</option>
+                        <option value="RESTRINGIDO">RESTRINGIDO</option>
                     </Form.Select>
                 </Form.Group>
 
                 <Form.Group className="mb-3" controlId="formDebt">
                     <Form.Label>Deuda</Form.Label>
-                    <Form.Control type="number" value={debt} onChange={handleDebtChange} />
+                    <InputGroup>
+                        <InputGroup.Text>$</InputGroup.Text>
+                        <Form.Control type="number" value={debt} onChange={handleDebtChange} placeholder="0"/>
+                    </InputGroup>
                 </Form.Group>
                 </>
             )}

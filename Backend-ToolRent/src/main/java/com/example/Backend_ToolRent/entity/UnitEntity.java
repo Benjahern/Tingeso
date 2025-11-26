@@ -1,5 +1,8 @@
 package com.example.Backend_ToolRent.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.Data;
@@ -10,6 +13,7 @@ import java.util.List;
 /**
  * Class of tools per unit
  */
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 @Data
 @Entity
 @Table(name = "unit")
@@ -27,7 +31,7 @@ public class UnitEntity {
     /**
      * Relation de unit with the tool
      */
-    @ManyToOne(fetch = FetchType.LAZY) // lazy es para que no lo cargue siempre, solo cuando sea solicitado
+    @ManyToOne(fetch = FetchType.EAGER) // lazy es para que no lo cargue siempre, solo cuando sea solicitado
     @JoinColumn(name = "toolId", nullable = false)
     private ToolEntity tool;
 
@@ -51,7 +55,7 @@ public class UnitEntity {
      * loan history
      */
     @OneToMany(mappedBy = "unit", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonManagedReference("unit-loanunit")
+    @JsonBackReference("loanunit-unit")
     private List<LoanUnitEntity> loanUnits;
 
 }

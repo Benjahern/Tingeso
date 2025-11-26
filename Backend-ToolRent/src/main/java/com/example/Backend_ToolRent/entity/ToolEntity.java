@@ -1,11 +1,13 @@
 package com.example.Backend_ToolRent.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.Data;
 
 /**
  * general class of tools
  */
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 @Data
 @Entity
 @Table(name = "tools")
@@ -35,7 +37,7 @@ public class ToolEntity {
      * Value of the replacement if the tool breaks
      */
     @Column(name = "replacementValue", nullable = false)
-    private double replacementValue;
+    private Double replacementValue;
 
     /**
      * Category of the tool
@@ -54,7 +56,7 @@ public class ToolEntity {
      * Daily price of the tool for the loans
      */
     @Column(name = "dailyPrice")
-    private double dailyPrice;
+    private Double dailyPrice;
 
     /**
      * Url of the imagen tool

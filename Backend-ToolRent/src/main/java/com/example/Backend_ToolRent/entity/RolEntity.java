@@ -1,7 +1,9 @@
 package com.example.Backend_ToolRent.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.Data;
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 
 @Data
 @Entity

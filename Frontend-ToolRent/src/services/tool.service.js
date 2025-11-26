@@ -32,11 +32,21 @@ const setReplacementValue = (toolId, value) => {
   return httpClient.put(`/api/tools/${toolId}/replacement-value`, null, {
     params: { value }
   });
-}
+};
 
 const remove = id => {
     return httpClient.delete(`api/tools/${id}`);
-}
+};
+
+const uploadImage = (toolId, imageFile) => {
+  const formData = new FormData();
+  formData.append("file", imageFile);
+  return httpClient.post(`/api/tools/${toolId}/image`, formData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    }
+  })
+};
 
 export default {
     getAll,
@@ -46,5 +56,6 @@ export default {
     remove,
     searchToolByName,
     setDailyPrice,
-    setReplacementValue
+    setReplacementValue,
+    uploadImage
 };

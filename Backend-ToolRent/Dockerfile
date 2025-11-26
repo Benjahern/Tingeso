@@ -15,10 +15,12 @@ FROM eclipse-temurin:17-jre-jammy
 
 WORKDIR /app
 
+RUN mkdir -p /uploads/herramientas && chmod -R 755 /uploads
+
+
 ARG JAR_FILE=target/ToolRent-Backend.jar
 COPY --from=builder /app/${JAR_FILE} ToolRent-Backend.jar
 
 EXPOSE 8090
 
 ENTRYPOINT ["java","-jar","ToolRent-Backend.jar"]
-

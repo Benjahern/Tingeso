@@ -1,5 +1,7 @@
 package com.example.Backend_ToolRent.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.Data;
@@ -9,6 +11,7 @@ import java.util.List;
 /**
  * Entity client of ToolRent
  */
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 @Data
 @Entity
 @Table(name = "clients")
@@ -37,7 +40,7 @@ public class ClientEntity extends UserEntity {
     /**
      * RUT of the client
       */
-    @Column(name = "rut", nullable = false)
+    @Column(name = "rut", nullable = false, unique = true)
     private String rut;
 
     /**
@@ -50,6 +53,6 @@ public class ClientEntity extends UserEntity {
      * List of client loans
      */
     @OneToMany(mappedBy = "client", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonManagedReference("client-loans")
+    @JsonBackReference("client-loans")
     private List<LoansEntity> loans;
 }

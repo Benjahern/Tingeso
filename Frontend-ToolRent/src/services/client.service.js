@@ -4,16 +4,16 @@ const createClient = data => {
     return httpClient.post("api/clients", data);
 }
 
-const getAllClients = () => {
-    return httpClient.get("api/clients");
+const getAllClients = (page = 1, size = 10) => {
+    return httpClient.get(`api/clients?page=${page}&size=${size}`);
 }
 
 const getClient = id => {
     return httpClient.get(`api/clients/${id}`);
 }
 
-const searchClient = (searchType, query) => {
-    return httpClient.get(`api/clients/search?${searchType}=${query}`);
+const searchClient = (searchType, query, page = 1, size = 10) => {
+    return httpClient.get(`api/clients/search?${searchType}=${query}&page=${page}&size=${size}`);
 }
 
 const updateClient = (id, client) => {

@@ -32,7 +32,6 @@ public class FileStorageService {
         Path target = dirPath.resolve(filename);
         Files.copy(file.getInputStream(), target, StandardCopyOption.REPLACE_EXISTING);
 
-        // Ruta pública que guardarás en la BD
         return "/uploads/" + subfolder + "/" + filename;
     }
 

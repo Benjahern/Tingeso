@@ -1,0 +1,174 @@
+services:
+  postgres:
+    image: postgres:15
+    container_name: toolrent-postgres-prod
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASS}
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - toolrent-network
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:22.0
+    container_name: toolrent-keycloak-prod
+    command: start --import-realm
+    environment:
+      KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN_USER}
+      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASS}
+      KC_DB: postgres
+      KC_DB_URL_HOST: postgres
+      KC_DB_URL_DATABASE: ${DB_NAME}
+      KC_DB_USERNAME: ${DB_USER}
+      KC_DB_PASSWORD: ${DB_PASS}
+      KC_DB_SCHEMA: public
+      KC_HOSTNAME: ${DOMAIN_NAME}
+      KC_HTTP_ENABLED: "true"
+      KC_HOSTNAME_STRICT: "false"
+      KC_PROXY: edge
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./keycloak-realm:/opt/keycloak/data/import
+    depends_on:
+      - postgres
+    networks:
+      - toolrent-network
+    restart: unless-stopped
+
+  # First replic
+  toolrent-backend-1:
+    build: .
+    image: toolrent-backend
+    container_name: toolrent-backend-1
+    volumes:
+      - ./uploads:/uploads
+    environment:
+      DB_URL: jdbc:postgresql://postgres:5432/${DB_NAME}
+      DB_USER: ${DB_USER}
+      DB_PASS: ${DB_PASS}
+      APP_UPLOAD_DIR: /uploads
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://${DOMAIN_NAME}/realms/ToolRent-realm
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: http://keycloak:8080/realms/ToolRent-realm/protocol/openid-connect/certs
+    depends_on:
+        - postgres
+        - keycloak
+    networks:
+        - toolrent-network
+    restart: unless-stopped
+
+  # Second replic
+  toolrent-backend-2:
+    build: .
+    image: toolrent-backend
+    container_name: toolrent-backend-2
+    volumes:
+      - ./uploads:/uploads
+    environment:
+      DB_URL: jdbc:postgresql://postgres:5432/${DB_NAME}
+      DB_USER: ${DB_USER}
+      DB_PASS: ${DB_PASS}
+      APP_UPLOAD_DIR: /uploads
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://${DOMAIN_NAME}/realms/ToolRent-realm
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: http://keycloak:8080/realms/ToolRent-realm/protocol/openid-connect/certs
+    depends_on:
+      - postgres
+      - keycloak
+    networks:
+      - toolrent-network
+    restart: unless-stopped
+
+  #third replic
+  toolrent-backend-3:
+    build: .
+    image: toolrent-backend
+    container_name: toolrent-backend-3
+    volumes:
+      - ./uploads:/uploads
+    environment:
+      DB_URL: jdbc:postgresql://postgres:5432/${DB_NAME}
+      DB_USER: ${DB_USER}
+      DB_PASS: ${DB_PASS}
+      APP_UPLOAD_DIR: /uploads
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://${DOMAIN_NAME}/realms/ToolRent-realm
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: http://keycloak:8080/realms/ToolRent-realm/protocol/openid-connect/certs
+    depends_on:
+      - postgres
+      - keycloak
+    networks:
+      - toolrent-network
+    restart: unless-stopped
+
+  # nginx balancer
+  nginx-backend:
+    image: nginx:alpine
+    container_name: toolrent-nginx-backend
+    ports:
+      - "8090:80"
+    volumes:
+      - ./nginx-backend.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - toolrent-backend-1
+      - toolrent-backend-2
+      - toolrent-backend-3
+    networks:
+      - toolrent-network
+    restart: unless-stopped
+
+  # first replic
+  toolrent-frontend-1:
+    build:
+      context: ../Frontend-ToolRent
+      dockerfile: Dockerfile
+    container_name: toolrent-frontend-1
+    networks:
+      - toolrent-network
+    restart: unless-stopped
+
+  # second replic
+  toolrent-frontend-2:
+    build:
+      context: ../Frontend-ToolRent
+      dockerfile: Dockerfile
+    container_name: toolrent-frontend-2
+    networks:
+      - toolrent-network
+    restart: unless-stopped
+
+  # Third replic
+  toolrent-frontend-3:
+    build:
+      context: ../Frontend-ToolRent
+      dockerfile: Dockerfile
+    container_name: toolrent-frontend-3
+    networks:
+      - toolrent-network
+    restart: unless-stopped
+
+  # Frontend balancer
+  nginx-frontend:
+    image: nginx:alpine
+    container_name: toolrent-nginx-frontend
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx-frontend.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - toolrent-frontend-1
+      - toolrent-frontend-2
+      - toolrent-frontend-3
+      - nginx-backend
+    networks:
+      - toolrent-network
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+
+networks:
+  toolrent-network:
+    driver: bridge

@@ -1,0 +1,29 @@
+.clients-with-fine-container {
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+    padding: 30px;
+    margin-bottom: 20px;
+}
+
+.clients-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+.clients-table th, .clients-table td {
+    padding: 10px 16px;
+    text-align: left;
+    border-bottom: 1px solid #eaeaea;
+}
+
+.clients-table th {
+    background: #efefef;
+    font-weight: bold;
+}
+
+.status {
+    font-weight: 600;
+    color: #d9534f;
+}

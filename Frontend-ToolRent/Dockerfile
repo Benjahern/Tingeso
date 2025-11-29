@@ -1,26 +1,22 @@
-# Etapa 1: Construcción
-FROM node:20-alpine AS builder
+# 1. Usar una imagen base de Node.js (LTS version recomendada)
+# 'alpine' es una versión ligera de Linux
+FROM node:20-alpine
 
+# 2. Establecer el directorio de trabajo dentro del contenedor
 WORKDIR /app
 
-# Copiar archivos de dependencias
-COPY package.json package-lock.json ./
+# 3. Copiar los archivos de dependencias primero (para aprovechar la caché de Docker)
+COPY package*.json ./
 
-# Instalar dependencias
-RUN npm ci
+# 4. Instalar las dependencias
+RUN npm install
 
-# Copiar el resto del código
+# 5. Copiar el resto del código fuente
 COPY . .
 
-# Construir la aplicación
-RUN npm run build
+# 6. Exponer el puerto que usa tu framework (Vite suele usar 5173, React/Next 3000)
+# Ajusta este número según lo que diga tu consola al correr npm run dev localmente
+EXPOSE 5173 
 
-# Etapa 2: Producción con Nginx
-FROM nginx:alpine
-
-# Copiar archivos construidos
-COPY --from=builder /app/dist /usr/share/nginx/html
-
-EXPOSE 80
-
-CMD ["nginx", "-g", "daemon off;"]
+# 7. Ejecutar el comando de desarrollo
+CMD ["npm", "run", "dev", "--", "--host"]

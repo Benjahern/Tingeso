@@ -61,6 +61,7 @@ public class SecurityConfig {
         CorsConfiguration configuration = new CorsConfiguration();
 
         // Orígenes permitidos (la URL de tu frontend)
+        /*
         configuration.setAllowedOrigins(Arrays.asList(
             "http://localhost:5173",
             "http://localhost",
@@ -69,8 +70,9 @@ public class SecurityConfig {
             "http://toolrent-frontend:5173",
             "http://frontend:5173"
         ));
+        */
         // Accept any localhost port as well (useful for dev with different ports)
-        configuration.setAllowedOriginPatterns(Arrays.asList("http://localhost:*", "http://127.0.0.1:*"));
+        configuration.setAllowedOriginPatterns(Arrays.asList("*"));
 
         // Métodos HTTP permitidos
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
@@ -78,6 +80,7 @@ public class SecurityConfig {
         // Cabeceras permitidas
         configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type"));
 
+        configuration.setExposedHeaders(Arrays.asList("Authorization"));
         // Permitir credenciales (si usas cookies o autenticación basada en sesión)
         configuration.setAllowCredentials(true);
 

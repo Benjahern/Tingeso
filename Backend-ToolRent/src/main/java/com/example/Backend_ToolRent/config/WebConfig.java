@@ -22,6 +22,7 @@ public class WebConfig implements WebMvcConfigurer {
                 .addResourceLocations("file:" + new java.io.File(uploadDir).getAbsolutePath());
     }
 
+    /*
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")
@@ -40,6 +41,8 @@ public class WebConfig implements WebMvcConfigurer {
                 .maxAge(3600);
     }
 
+
+    */
 
 
 

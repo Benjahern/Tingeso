@@ -19,6 +19,7 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/loans")
+@CrossOrigin("*")
 public class LoanController {
 
     private final LoansService loansService;

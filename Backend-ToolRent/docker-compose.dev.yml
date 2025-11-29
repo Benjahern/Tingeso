@@ -35,7 +35,6 @@ services:
   toolrent-backend:
     build: .
     image: toolrent-backend
-    container_name: toolrent-backend
     ports:
       - "8090:8090"
     volumes:

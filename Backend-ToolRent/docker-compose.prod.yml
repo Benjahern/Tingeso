@@ -26,21 +26,17 @@ services:
       KC_DB_USERNAME: ${DB_USER}
       KC_DB_PASSWORD: ${DB_PASS}
       KC_HOSTNAME: ${DOMAIN_NAME}
-
     ports:
       - "8080:8080"
     volumes:
       - ./keycloak-realm:/opt/keycloak/data/import
-    depends_on:
-      - postgres
+
     networks:
       - toolrent-network
     restart: unless-stopped
 
-  # First replic
   toolrent-backend-1:
     build: .
-    container_name: toolrent-backend-1
     volumes:
       - ./uploads:/uploads
     environment:
@@ -50,53 +46,13 @@ services:
       APP_UPLOAD_DIR: /uploads
       KEYCLOAK_ISSUER_URI: http://${DOMAIN_NAME}:8080/realms/ToolRent-realm
       REDIRECT_URI: http://${DOMAIN_NAME}:5173*
-    depends_on:
-        - postgres
-        - keycloak
+    deploy:
+      mode: replicated
+      replicas: 2
+    ports:
+      - "8090:8090"
     networks:
         - toolrent-network
-    restart: unless-stopped
-
-  # Second replic
-  toolrent-backend-2:
-    build: .
-    image: toolrent-backend
-    container_name: toolrent-backend-2
-    volumes:
-      - ./uploads:/uploads
-    environment:
-      DB_URL: jdbc:postgresql://postgres:5432/${DB_NAME}
-      DB_USER: ${DB_USER}
-      DB_PASS: ${DB_PASS}
-      APP_UPLOAD_DIR: /uploads
-      KEYCLOAK_ISSUER_URI: http://${DOMAIN_NAME}:8080/realms/ToolRent-realm
-      REDIRECT_URI: http://${DOMAIN_NAME}:5173*
-    depends_on:
-      - postgres
-      - keycloak
-    networks:
-      - toolrent-network
-    restart: unless-stopped
-
-  #third replic
-  toolrent-backend-3:
-    build: .
-    image: toolrent-backend
-    container_name: toolrent-backend-3
-    volumes:
-      - ./uploads:/uploads
-    environment:
-      DB_URL: jdbc:postgresql://postgres:5432/${DB_NAME}
-      DB_USER: ${DB_USER}
-      DB_PASS: ${DB_PASS}
-      APP_UPLOAD_DIR: /uploads
-      KEYCLOAK_ISSUER_URI: http://${DOMAIN_NAME}:8080/realms/ToolRent-realm
-      REDIRECT_URI: http://${DOMAIN_NAME}:5173*
-    depends_on:
-      - postgres
-      - keycloak
-    networks:
-      - toolrent-network
     restart: unless-stopped
 
 
@@ -104,25 +60,21 @@ services:
     build:
       context: ../Frontend-ToolRent
       dockerfile: Dockerfile
-    container_name: toolrent-frontend-1
     networks:
       - toolrent-network
+    ports:
+      - "5173:5173"
     restart: unless-stopped
 
 
   nginx:
-    image: nginx:alpine
+    image: nginx
     container_name: toolrent-nginx
     ports:
-      - "5173:80" # Frontend
-      - "8090:8090" # Backend
+      - "80:80" # Frontend
     volumes:
-      - ./nginx.conf:/etc/nginx/nginx.conf:ro
-    depends_on:
-      - toolrent-frontend-1
-      - toolrent-backend-1
-      - toolrent-backend-2
-      - toolrent-backend-3
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf
+
     networks:
       - toolrent-network
     restart: unless-stopped

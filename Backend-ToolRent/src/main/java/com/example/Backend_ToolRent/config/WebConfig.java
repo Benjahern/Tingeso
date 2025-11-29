@@ -25,9 +25,23 @@ public class WebConfig implements WebMvcConfigurer {
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")
-                .allowedOrigins("*")
-                .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD", "PATCH");
+                .allowedOrigins(
+                        "http://localhost:5173",
+                        "http://toolrent-frontend-1:5173",
+                        "http://localhost:80",
+                        "http://localhost:8090",
+                        "http://toolrent-backend-1:8090",
+                        "http://localhost"
+                )
+                .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+                .allowedHeaders("*")
+                .exposedHeaders("Authorization")
+                .allowCredentials(true)
+                .maxAge(3600);
     }
+
+
+
 
 
 }

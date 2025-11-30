@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import lombok.Data;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * Class for the workers
@@ -20,7 +21,7 @@ public class WorkerEntity extends UserEntity {
      */
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "workerRol")
-    private List<RolEntity> rol;
+    private Set<RolEntity> rol;
 
     @Column(name = "keycloakId")
     public String keycloakId;

@@ -1,8 +1,8 @@
 -- init.sql
 
 -- 1. Insertar Roles (usando snake_case estándar de Hibernate)
-INSERT INTO rol (rol_id, rol_name) VALUES (1, 'ADMIN') ON CONFLICT (rol_id) DO NOTHING;
-INSERT INTO rol (rol_id, rol_name) VALUES (2, 'EMPLOYEE') ON CONFLICT (rol_id) DO NOTHING;
+INSERT INTO rol (rol_id, rol_name) VALUES (1, 'ADMIN');
+INSERT INTO rol (rol_id, rol_name) VALUES (2, 'EMPLOYEE');
 
 -- Transacción CTE para crear tienda, usuario y trabajador vinculados
 WITH new_store AS (

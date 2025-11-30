@@ -76,8 +76,21 @@ pipeline {
                                     docker compose down --remove-orphans && \\
                                     docker compose up -d --no-build
 
-                                    echo "--- Esperando 20s a que Keycloak inicie para configurarlo ---"
-                                    sleep 20
+                                    echo "--- Esperando a que Keycloak inicie para configurarlo ---"
+                                    # wait-for- it
+                                    RETRIES=24
+                                    COUNT=0
+
+                                    # Bucle: Intenta hacer curl hasta que devuelva estado 200 (OK)
+                                    until curl -s -f -o /dev/null "http://localhost:8080/realms/master"; do
+                                        if [ \$COUNT -ge \$RETRIES ]; then
+                                            echo "❌ Error: Keycloak no inició después de 2 minutos."
+                                            exit 1
+                                        fi
+                                        echo "⏳ Esperando a Keycloak... (intento \$COUNT/\$RETRIES)"
+                                        sleep 5
+                                        COUNT=\$((COUNT+1))
+                                    done
 
                                     echo "--- Aplicando parches de seguridad al Master Realm ---"
                                     docker exec toolrent-keycloak-prod /opt/keycloak/bin/kcadm.sh config credentials --server http://localhost:8080 --realm master --user admin --password ${KEYCLOAK_ADMIN_PASS}

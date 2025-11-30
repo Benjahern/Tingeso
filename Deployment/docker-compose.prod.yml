@@ -13,6 +13,7 @@ services:
       - ./data.sql:/docker-entrypoint-initdb.d/data.sql
     networks:
       - toolrent-network
+    restart: unless-stopped
 
   keycloak:
     image: quay.io/keycloak/keycloak:22.0

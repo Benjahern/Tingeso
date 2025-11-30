@@ -15,24 +15,6 @@
       }
     ]
   },
-  "users":[
-    {
-      "id": "a1b2c3d4-e5f6-7890-1234-56789abcdef0",
-      "username": "benja",
-      "email": "benja@gmail.com",
-      "enabled": true,
-      "emailVerified": true,
-      "firstName": "Benja",
-      "credentials": [
-        {
-          "type": "password",
-          "value": "12345678",
-          "temporary": false
-        }
-      ],
-      "realmRoles": [ "ADMIN", "EMPLOYEE" ]
-    }
-  ],
   "clients": [
     {
       "clientId": "toolrent-backend",

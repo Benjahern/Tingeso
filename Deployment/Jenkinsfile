@@ -1,0 +1,97 @@
+pipeline {
+    agent any
+    environment {
+        DOCKERHUB_USERNAME = 'bigbenj4' 
+        
+        BACKEND_IMAGE_NAME = "${env.DOCKERHUB_USERNAME}/toolrent-backend"
+        FRONTEND_IMAGE_NAME = "${env.DOCKERHUB_USERNAME}/toolrent-frontend"
+        IMAGE_TAG = "${env.BUILD_ID}"
+        
+        DOCKERHUB_CREDENTIALS = 'dockerhub-credentials-id' 
+        SSH_CREDENTIALS = 'ssh-server-credentials-id'
+        
+        // --- SERVIDOR DESTINO ---
+        // Basado en tus mensajes anteriores
+        TARGET_USER = 'benjaminhernandez' 
+        TARGET_HOST = '127.0.0.1'
+        DEPLOY_DIR = 'deployment_toolrent'
+    }
+
+    stages {
+        stage('Build & Push Backend') {
+            steps {
+                script {
+                    echo "--- Construyendo Backend para: ${env.BACKEND_IMAGE_NAME}:${env.IMAGE_TAG} ---"
+                    // -f indica el Dockerfile, el segundo argumento es el contexto (carpeta)
+                    def backendImage = docker.build("${env.BACKEND_IMAGE_NAME}:${env.IMAGE_TAG}", "-f Backend-ToolRent/Dockerfile Backend-ToolRent")
+                    
+                    docker.withRegistry("https://index.docker.io/v1/", "${env.DOCKERHUB_CREDENTIALS}") {
+                        backendImage.push()
+                        backendImage.push("latest")
+                    }
+                }
+            }
+        }
+
+        stage('Build & Push Frontend') {
+            steps {
+                script {
+                    echo "--- Construyendo Frontend para: ${env.FRONTEND_IMAGE_NAME}:${env.IMAGE_TAG} ---"
+                    def frontendImage = docker.build("${env.FRONTEND_IMAGE_NAME}:${env.IMAGE_TAG}", "-f Frontend-ToolRent/Dockerfile Frontend-ToolRent")
+                    
+                    docker.withRegistry("https://index.docker.io/v1/", "${env.DOCKERHUB_CREDENTIALS}") {
+                        frontendImage.push()
+                        frontendImage.push("latest")
+                    }
+                }
+            }
+        }
+
+        stage('Deploy to Production') {
+            steps {
+                sshagent([env.SSH_CREDENTIALS]) {
+                    withCredentials([
+                        string(credentialsId: 'DB_PASS', variable: 'DB_PASS'),
+                        string(credentialsId: 'KEYCLOAK_ADMIN_PASS', variable: 'KEYCLOAK_ADMIN_PASS')
+                    ]) {
+                        script {
+                            // 1. Preparar carpetas en el servidor
+                            sh "ssh -o StrictHostKeyChecking=no ${env.TARGET_USER}@${env.TARGET_HOST} 'mkdir -p ${env.DEPLOY_DIR}/config/keycloak-realm'"
+
+                            // 2. Copiar archivos (docker-compose, nginx, keycloak config)
+                            // Copiamos el .prod.yml y lo renombramos a docker-compose.yml en destino
+                            sh "scp Deployment/docker-compose.prod.yml ${env.TARGET_USER}@${env.TARGET_HOST}:${env.DEPLOY_DIR}/docker-compose.yml"
+                            sh "scp Backend-ToolRent/nginx.conf ${env.TARGET_USER}@${env.TARGET_HOST}:${env.DEPLOY_DIR}/config/nginx.conf"
+                            sh "scp -r Backend-ToolRent/keycloak-realm/* ${env.TARGET_USER}@${env.TARGET_HOST}:${env.DEPLOY_DIR}/config/keycloak-realm/"
+
+                            // 3. Definir variables de entorno para el despliegue
+                            def env_vars = """
+                                export BACKEND_IMAGE_NAME=${env.BACKEND_IMAGE_NAME}
+                                export FRONTEND_IMAGE_NAME=${env.FRONTEND_IMAGE_NAME}
+                                export DB_NAME=toolrentdb
+                                export DB_USER=admin
+                                export DB_PASS=${DB_PASS}
+                                export KEYCLOAK_ADMIN_USER=admin
+                                export KEYCLOAK_ADMIN_PASS=${KEYCLOAK_ADMIN_PASS}
+                                export DOMAIN_NAME=${env.TARGET_HOST}
+                                export NGINX_CONF_PATH=./config/nginx.conf
+                                export KEYCLOAK_REALM_PATH=./config/keycloak-realm
+                            """
+
+                            // 4. Ejecutar comandos Docker en remoto
+                            sh """
+                                ssh -o StrictHostKeyChecking=no ${env.TARGET_USER}@${env.TARGET_HOST} '
+                                    cd ${env.DEPLOY_DIR} && \\
+                                    ${env_vars} \\
+                                    docker compose pull && \\
+                                    docker compose down --remove-orphans && \\
+                                    docker compose up -d --no-build
+                                '
+                            """
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

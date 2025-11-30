@@ -29,16 +29,18 @@ services:
     ports:
       - "8080:8080"
     volumes:
-      - ./keycloak-realm:/opt/keycloak/data/import
-
+      - ${KEYCLOAK_REALM_PATH:-../Backend-ToolRent/keycloak-realm}:/opt/keycloak/data/import  
     networks:
       - toolrent-network
     restart: unless-stopped
 
   toolrent-backend-1:
-    build: .
+    image: ${BACKEND_IMAGE_NAME:-bigbenj4/toolrent-backend}:latest  
+    build:
+      context: ../Backend-ToolRent
+      dockerfile: Dockerfile 
     volumes:
-      - ./uploads:/uploads
+      - ./uploads:/uploads    
     environment:
       DB_URL: jdbc:postgresql://postgres:5432/${DB_NAME}
       DB_USER: ${DB_USER}
@@ -57,6 +59,7 @@ services:
 
 
   toolrent-frontend-1:
+    image: ${FRONTEND_IMAGE_NAME:-bigbenj4/toolrent-frontend}:latest
     build:
       context: ../Frontend-ToolRent
       dockerfile: Dockerfile
@@ -73,8 +76,7 @@ services:
     ports:
       - "80:80" # Frontend
     volumes:
-      - ./nginx.conf:/etc/nginx/conf.d/default.conf
-
+      - ${NGINX_CONF_PATH:-../Backend-ToolRent/nginx.conf}:/etc/nginx/conf.d/default.conf    
     networks:
       - toolrent-network
     restart: unless-stopped

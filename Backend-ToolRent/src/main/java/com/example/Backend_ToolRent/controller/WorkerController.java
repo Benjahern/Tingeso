@@ -15,6 +15,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -78,8 +79,7 @@ public class WorkerController {
         // Obtener roles por IDs
         List<Long> roleIds = (List<Long>) request.get("roleIds");
         List<RolEntity> roles = rolRepo.findAllById(roleIds);
-        worker.setRol(roles);
-
+        worker.setRol(new HashSet<>(worker.getRol()));
         // Obtener store
         Long storeId = ((Number) request.get("storeId")).longValue();
         StoreEntity store = storeRepo.findById(storeId)
@@ -105,7 +105,7 @@ public class WorkerController {
         // Obtener roles por IDs
         List<Long> roleIds = (List<Long>) request.get("roleIds");
         List<RolEntity> roles = rolRepo.findAllById(roleIds);
-        worker.setRol(roles);
+        worker.setRol(new HashSet<>(worker.getRol()));
 
         WorkerEntity updated = workerService.updateWorker(id, worker);
         return ResponseEntity.ok(updated);

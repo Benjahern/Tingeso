@@ -8,6 +8,7 @@ import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -120,7 +121,7 @@ public class WorkerService {
     public List<RolEntity> getRolByWorkerId(Long id) {
         if (workerRepo.existsById(id)) {
             WorkerEntity worker = getWorkerById(id);
-            return worker.getRol();
+            return new ArrayList<>(worker.getRol());
         }else {
             throw new EntityNotFoundException("Worker Not Found");
         }

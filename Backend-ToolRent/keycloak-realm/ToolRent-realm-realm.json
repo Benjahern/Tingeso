@@ -48,7 +48,6 @@
   ],
   "users": [
     {
-      "id": "a1b2c3d4-e5f6-7890-1234-56789abcdef0",  <-- ¡ESTA LÍNEA ES LA CLAVE!
       "username": "benja",
       "enabled": true,
       "email": "benja@gmail.com",
@@ -61,7 +60,8 @@
       ],
       "realmRoles": [
         "ADMIN"
-      ]
+      ],
+      "id": "a1b2c3d4-e5f6-7890-1234-56789abcdef0"
     }
   ]
 }

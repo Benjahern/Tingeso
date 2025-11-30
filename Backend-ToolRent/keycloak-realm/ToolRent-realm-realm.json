@@ -51,7 +51,7 @@
       "username": "benja",
       "enabled": true,
       "email": "benja@gmail.com",
-      "emailVerified": true,
+      "emailVerified": false,
       "credentials": [
         {
           "type": "password",

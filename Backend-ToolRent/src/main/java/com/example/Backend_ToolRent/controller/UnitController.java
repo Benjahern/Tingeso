@@ -95,7 +95,7 @@ public class UnitController {
         String username = null;
         if(auth.getPrincipal() instanceof Jwt) {
             Jwt jwt = (Jwt) auth.getPrincipal();
-            username = jwt.getClaimAsString("preferred_username");
+            username = jwt.getClaimAsString("email");
 
         }
         Long workerId = workerService.getWorkerByMail(username).getUserId();
@@ -111,7 +111,7 @@ public class UnitController {
 
         if(authentication.getPrincipal() instanceof Jwt) {
             Jwt jwt = (Jwt) authentication.getPrincipal();
-            username = jwt.getClaimAsString("preferred_username");
+            username = jwt.getClaimAsString("email");
 
         }
         if(username == null) {
@@ -160,7 +160,7 @@ public class UnitController {
 
         if(auth.getPrincipal() instanceof Jwt) {
             Jwt jwt = (Jwt) auth.getPrincipal();
-            username = jwt.getClaimAsString("preferred_username");
+            username = jwt.getClaimAsString("email");
         }
 
         Long workerId = workerService.getWorkerByMail(username).getUserId();

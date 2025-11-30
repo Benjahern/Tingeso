@@ -10,7 +10,7 @@ export default defineConfig({
     proxy: {
       // Forward /api/* to local spring backend (adjust port if needed)
       '/api': {
-        target: 'http://localhost:8090',
+        target: 'http://toolrent-backend-1:8090',
         changeOrigin: true,
         secure: false,
         // keep /api in the forwarded path
@@ -18,13 +18,13 @@ export default defineConfig({
       },
       // Forward Keycloak endpoints
       '/auth': {
-        target: 'http://localhost:8080',
+        target: 'http://keycloak:8080',
         changeOrigin: true,
         secure: false,
         rewrite: (path) => path.replace(/^\/auth/, '/auth')
       },
       '/realms': {
-        target: 'http://localhost:8080',
+        target: 'http://keycloak:8080',
         changeOrigin: true,
         secure: false
       }

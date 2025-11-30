@@ -11,6 +11,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.oauth2.jwt.Jwt;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -99,17 +100,19 @@ public class LoanController {
     @PreAuthorize("hasAnyRole('ADMIN','EMPLOYEE')")
     public ResponseEntity<?> createLoan(@RequestBody Map<String, Object> request){
         try{
-
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            String mail = "";
 
-            System.out.println("========== DEBUG ==========");
-            System.out.println("Authentication: " + auth);
-            System.out.println("Is Authenticated: " + auth.isAuthenticated());
-            System.out.println("Username: " + auth.getName());
-            System.out.println("Authorities: " + auth.getAuthorities());
-            System.out.println("===========================");
+            // --- CORRECCIÓN: Extraer email del Token JWT ---
+            if (auth.getPrincipal() instanceof Jwt) {
+                Jwt jwt = (Jwt) auth.getPrincipal();
+                mail = jwt.getClaimAsString("email"); // Obtenemos "benja@gmail.com"
+            } else {
+                mail = auth.getName(); // Fallback (devuelve el ID UUID, causará error si no es JWT)
+            }
+            // -----------------------------------------------
 
-            String mail = auth.getName();
+            // Ahora sí encontrará al trabajador por su email real
             Long workerId = workerService.getWorkerByMail(mail).getUserId();
 
             Long clientId = Long.valueOf(request.get("clientId").toString());
@@ -134,8 +137,8 @@ public class LoanController {
 
             return ResponseEntity.status(HttpStatus.CREATED).body(loan);
 
-
         } catch (Exception e){
+            e.printStackTrace(); // Útil para ver errores en logs de docker
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("error", "Error al crear el préstamo: " + e.getMessage()));
         }
     }
@@ -145,14 +148,23 @@ public class LoanController {
     public ResponseEntity<?> returnLoan(@PathVariable Long loanId, @RequestBody Map<Long, String> unitCondition){
         try {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-            String username = authentication.getName();
+            String username = "";
+
+            // --- CORRECCIÓN: Extraer email del Token JWT ---
+            if (authentication.getPrincipal() instanceof Jwt) {
+                Jwt jwt = (Jwt) authentication.getPrincipal();
+                username = jwt.getClaimAsString("email");
+            } else {
+                username = authentication.getName();
+            }
+            // -----------------------------------------------
+
             Long workerId = workerService.getWorkerByMail(username).getUserId();
 
             LoansEntity loan = loansService.returnLoan(loanId, workerId, unitCondition);
             return ResponseEntity.ok(loan);
         } catch (Exception e){
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
-
         }
     }
 

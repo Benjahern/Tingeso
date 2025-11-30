@@ -76,11 +76,16 @@ public class WorkerController {
         worker.setName((String) request.get("name"));
         worker.setMail((String) request.get("mail"));
 
-        // Obtener roles por IDs
         List<Long> roleIds = (List<Long>) request.get("roleIds");
-        List<RolEntity> roles = rolRepo.findAllById(roleIds);
-        worker.setRol(new HashSet<>(worker.getRol()));
-        // Obtener store
+        
+        // Validamos que roleIds no sea null para evitar otro error
+        if (roleIds != null && !roleIds.isEmpty()) {
+            List<RolEntity> roles = rolRepo.findAllById(roleIds);
+            worker.setRol(new HashSet<>(roles)); 
+        } else {
+            worker.setRol(new HashSet<>()); 
+        }
+
         Long storeId = ((Number) request.get("storeId")).longValue();
         StoreEntity store = storeRepo.findById(storeId)
                 .orElseThrow(() -> new RuntimeException("Store not found"));
@@ -102,10 +107,15 @@ public class WorkerController {
         worker.setName((String) request.get("name"));
         worker.setMail((String) request.get("mail"));
 
-        // Obtener roles por IDs
         List<Long> roleIds = (List<Long>) request.get("roleIds");
-        List<RolEntity> roles = rolRepo.findAllById(roleIds);
-        worker.setRol(new HashSet<>(worker.getRol()));
+        
+        if (roleIds != null && !roleIds.isEmpty()) {
+            List<RolEntity> roles = rolRepo.findAllById(roleIds);
+            worker.setRol(new HashSet<>(roles)); // Usar la variable 'roles'
+        } else {
+            worker.setRol(new HashSet<>());
+        }
+        // -------------------------------
 
         WorkerEntity updated = workerService.updateWorker(id, worker);
         return ResponseEntity.ok(updated);

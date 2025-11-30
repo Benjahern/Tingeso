@@ -60,6 +60,7 @@ pipeline {
                             sh "scp Deployment/docker-compose.prod.yml ${env.TARGET_USER}@${env.TARGET_HOST}:${env.DEPLOY_DIR}/docker-compose.yml"
                             sh "scp Backend-ToolRent/nginx.conf ${env.TARGET_USER}@${env.TARGET_HOST}:${env.DEPLOY_DIR}/config/nginx.conf"
                             sh "scp -r Backend-ToolRent/keycloak-realm/* ${env.TARGET_USER}@${env.TARGET_HOST}:${env.DEPLOY_DIR}/config/keycloak-realm/"
+                            sh "scp Deployment/data.sql ${env.TARGET_USER}@${env.TARGET_HOST}:${env.DEPLOY_DIR}/data.sql"
 
                             // 3. Definir variables de entorno para el despliegue
                             def env_vars = """

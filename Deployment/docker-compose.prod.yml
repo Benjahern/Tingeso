@@ -27,6 +27,7 @@ services:
       KC_DB_USERNAME: ${DB_USER}
       KC_DB_PASSWORD: ${DB_PASS}
       KC_HOSTNAME: ${DOMAIN_NAME}
+      KC_PROXY: "edge"
     ports:
       - "8080:8080"
     volumes:

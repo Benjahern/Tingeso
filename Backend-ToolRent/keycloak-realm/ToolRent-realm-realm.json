@@ -45,5 +45,22 @@
       "standardFlowEnabled": true,
       "fullScopeAllowed": true
     }
+  ],
+  "users": [
+    {
+      "username": "benja",
+      "enabled": true,
+      "email": "benja@gmail.com",
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "12345678"
+        }
+      ],
+      "realmRoles": [
+        "ADMIN"
+      ]
+    }
   ]
 }

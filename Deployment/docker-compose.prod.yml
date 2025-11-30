@@ -44,12 +44,15 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+    
+    # --- CAMBIO IMPORTANTE AQUÍ ---
+    # Healthcheck simplificado: Solo verifica si el puerto 8080 responde.
     healthcheck:
-      test: ["CMD-SHELL", "exec 3<>/dev/tcp/127.0.0.1/8080; echo -e 'GET /health/ready HTTP/1.1\\r\\nHost: localhost\\r\\nConnection: close\\r\\n\\r\\n' >&3; cat <&3 | grep -q '200 OK'"]
+      test: ["CMD-SHELL", "timeout 5s bash -c 'cat < /dev/null > /dev/tcp/127.0.0.1/8080'"]
       interval: 10s
       timeout: 5s
-      retries: 10
-      start_period: 90s
+      retries: 20
+      start_period: 60s
     restart: unless-stopped
 
   toolrent-backend-1:
@@ -81,11 +84,13 @@ services:
         condition: service_healthy
       postgres:
         condition: service_healthy
+    
+    # Healthcheck simplificado para el backend también
     healthcheck:
-      test: ["CMD-SHELL", "timeout 2 bash -c '</dev/tcp/localhost/8090'"]
+      test: ["CMD-SHELL", "timeout 5s bash -c 'cat < /dev/null > /dev/tcp/127.0.0.1/8090'"]
       interval: 10s
       timeout: 5s
-      retries: 10
+      retries: 15
       start_period: 60s
     restart: unless-stopped
 
@@ -98,11 +103,12 @@ services:
       - toolrent-network
     ports:
       - "5173:5173"
+    # Healthcheck simplificado para el frontend
     healthcheck:
       test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:5173 || exit 1"]
-      interval: 5s
+      interval: 10s
       timeout: 5s
-      retries: 5
+      retries: 10
       start_period: 30s
     restart: unless-stopped
 

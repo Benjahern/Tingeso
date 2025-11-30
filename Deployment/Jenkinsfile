@@ -55,7 +55,8 @@ pipeline {
                     ]) {
                         script {
                             sh "ssh -o StrictHostKeyChecking=no ${env.TARGET_USER}@${env.TARGET_HOST} 'mkdir -p ${env.DEPLOY_DIR}/config/keycloak-realm'"
-
+                            sh "ssh -o StrictHostKeyChecking=no ${env.TARGET_USER}@${env.TARGET_HOST} 'rm -rf ${env.DEPLOY_DIR}/data.sql'"
+                            
                             // Copiar archivos (docker-compose, nginx, keycloak config)
                             sh "scp Deployment/docker-compose.prod.yml ${env.TARGET_USER}@${env.TARGET_HOST}:${env.DEPLOY_DIR}/docker-compose.yml"
                             sh "scp Backend-ToolRent/nginx.conf ${env.TARGET_USER}@${env.TARGET_HOST}:${env.DEPLOY_DIR}/config/nginx.conf"

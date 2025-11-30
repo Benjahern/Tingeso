@@ -126,7 +126,7 @@ public class UnitController {
     @PostMapping("/{unitId}/decommission")
     public ResponseEntity<?> decommissionUnit(@PathVariable Long unitId, @RequestBody Map<String, String> data, @AuthenticationPrincipal Jwt jwt) {
         UnitEntity unit = unitService.findUnitById(unitId);
-        WorkerEntity worker = workerService.getWorkerByMail(jwt.getClaimAsString("preferred_username"));
+        WorkerEntity worker = workerService.getWorkerByMail(jwt.getClaimAsString("email"));
 
         ToolEntity tool = unit.getTool();
 

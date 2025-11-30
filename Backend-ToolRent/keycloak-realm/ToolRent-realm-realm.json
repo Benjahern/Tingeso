@@ -1,6 +1,7 @@
 {
   "realm": "ToolRent-realm",
   "enabled": true,
+  "sslRequired": "none"
   "id": "ToolRent-realm",
   "clients": [
     {

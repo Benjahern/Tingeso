@@ -39,6 +39,9 @@ services:
       - ${KEYCLOAK_REALM_PATH:-../Backend-ToolRent/keycloak-realm}:/opt/keycloak/data/import  
     networks:
       - toolrent-network
+    depends_on:
+      - postgres:
+          condition: service_healthy
     healthcheck:
       test: ["CMD-SHELL", "exec 3<>/dev/tcp/127.0.0.1/8080; echo -e 'GET /health/ready HTTP/1.1\\r\\nHost: localhost\\r\\nConnection: close\\r\\n\\r\\n' >&3; cat <&3 | grep -q '200 OK'"]
       interval: 10s
@@ -59,7 +62,7 @@ services:
       DB_USER: ${DB_USER}
       DB_PASS: ${DB_PASS}
       APP_UPLOAD_DIR: /uploads
-      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://127.0.0.1:8080/realms/ToolRent-realm
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://${DOMAIN_NAME}:8080/realms/ToolRent-realm
       SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: http://keycloak:8080/realms/ToolRent-realm/protocol/openid-connect/certs
       REDIRECT_URI: http://${DOMAIN_NAME}:5173*
       SPRING_SQL_INIT_MODE: always
@@ -71,6 +74,11 @@ services:
       - "8090"
     networks:
         - toolrent-network
+    depends_on:
+      - keycloak:
+          condition: service_healthy
+      - postgres:
+          condition: service_healthy
     restart: unless-stopped
 
 

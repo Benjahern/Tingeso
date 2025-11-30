@@ -2,18 +2,14 @@ pipeline {
     agent any
     environment {
         DOCKERHUB_USERNAME = 'bigbenj4' 
-        
         BACKEND_IMAGE_NAME = "${env.DOCKERHUB_USERNAME}/toolrent-backend"
         FRONTEND_IMAGE_NAME = "${env.DOCKERHUB_USERNAME}/toolrent-frontend"
         IMAGE_TAG = "${env.BUILD_ID}"
-        
         DOCKERHUB_CREDENTIALS = 'dockerhub-credentials-id' 
         SSH_CREDENTIALS = 'ssh-server-credentials-id'
-        
         TARGET_USER = 'benjaminhernandez' 
         TARGET_HOST = '127.0.0.1'
         DEPLOY_DIR = 'deployment_toolrent'
-
         DOCKER_CONTEXT = "default"
     }
 
@@ -23,7 +19,6 @@ pipeline {
                 script {
                     echo "--- Construyendo Backend para: ${env.BACKEND_IMAGE_NAME}:${env.IMAGE_TAG} ---"
                     def backendImage = docker.build("${env.BACKEND_IMAGE_NAME}:${env.IMAGE_TAG}", "-f Backend-ToolRent/Dockerfile Backend-ToolRent")
-                    
                     docker.withRegistry("https://index.docker.io/v1/", "${env.DOCKERHUB_CREDENTIALS}") {
                         backendImage.push()
                         backendImage.push("latest")
@@ -37,7 +32,6 @@ pipeline {
                 script {
                     echo "--- Construyendo Frontend para: ${env.FRONTEND_IMAGE_NAME}:${env.IMAGE_TAG} ---"
                     def frontendImage = docker.build("${env.FRONTEND_IMAGE_NAME}:${env.IMAGE_TAG}", "-f Frontend-ToolRent/Dockerfile Frontend-ToolRent")
-                    
                     docker.withRegistry("https://index.docker.io/v1/", "${env.DOCKERHUB_CREDENTIALS}") {
                         frontendImage.push()
                         frontendImage.push("latest")
@@ -56,12 +50,10 @@ pipeline {
                         script {
                             sh "ssh -o StrictHostKeyChecking=no ${env.TARGET_USER}@${env.TARGET_HOST} 'mkdir -p ${env.DEPLOY_DIR}/config/keycloak-realm'"
                             
-                            // Copiar archivos (docker-compose, nginx, keycloak config)
                             sh "scp Deployment/docker-compose.prod.yml ${env.TARGET_USER}@${env.TARGET_HOST}:${env.DEPLOY_DIR}/docker-compose.yml"
                             sh "scp Backend-ToolRent/nginx.conf ${env.TARGET_USER}@${env.TARGET_HOST}:${env.DEPLOY_DIR}/config/nginx.conf"
                             sh "scp -r Backend-ToolRent/keycloak-realm/* ${env.TARGET_USER}@${env.TARGET_HOST}:${env.DEPLOY_DIR}/config/keycloak-realm/"
 
-                            // 3. Definir variables de entorno para el despliegue
                             def env_vars = """
                                 export BACKEND_IMAGE_NAME=${env.BACKEND_IMAGE_NAME}
                                 export FRONTEND_IMAGE_NAME=${env.FRONTEND_IMAGE_NAME}
@@ -83,6 +75,19 @@ pipeline {
                                     docker compose pull && \\
                                     docker compose down --remove-orphans && \\
                                     docker compose up -d --no-build
+
+                                    echo "--- Esperando 20s a que Keycloak inicie para configurarlo ---"
+                                    sleep 20
+
+                                    echo "--- Aplicando parches de seguridad al Master Realm ---"
+                                    docker exec toolrent-keycloak-prod /opt/keycloak/bin/kcadm.sh config credentials --server http://localhost:8080 --realm master --user admin --password ${KEYCLOAK_ADMIN_PASS}
+                                    
+                                    # Desactivar SSL del Master
+                                    docker exec toolrent-keycloak-prod /opt/keycloak/bin/kcadm.sh update realms/master -s sslRequired=NONE
+                                    
+                                    # Arreglar CORS para que puedas entrar desde 127.0.0.1
+                                    CID=\$(docker exec toolrent-keycloak-prod /opt/keycloak/bin/kcadm.sh get clients -r master -q clientId=security-admin-console --fields id --format csv --noquotes)
+                                    docker exec toolrent-keycloak-prod /opt/keycloak/bin/kcadm.sh update clients/\$CID -r master -s "redirectUris=[\\"http://localhost:8080/*\\",\\"http://${env.TARGET_HOST}:8080/*\\"]" -s "webOrigins=[\\"+ \\"]"
                                 '
                             """
                         }

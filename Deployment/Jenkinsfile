@@ -10,11 +10,11 @@ pipeline {
         DOCKERHUB_CREDENTIALS = 'dockerhub-credentials-id' 
         SSH_CREDENTIALS = 'ssh-server-credentials-id'
         
-        // --- SERVIDOR DESTINO ---
-        // Basado en tus mensajes anteriores
         TARGET_USER = 'benjaminhernandez' 
         TARGET_HOST = '127.0.0.1'
         DEPLOY_DIR = 'deployment_toolrent'
+
+        DOCKER_CONTEXT = "default"
     }
 
     stages {
@@ -22,7 +22,6 @@ pipeline {
             steps {
                 script {
                     echo "--- Construyendo Backend para: ${env.BACKEND_IMAGE_NAME}:${env.IMAGE_TAG} ---"
-                    // -f indica el Dockerfile, el segundo argumento es el contexto (carpeta)
                     def backendImage = docker.build("${env.BACKEND_IMAGE_NAME}:${env.IMAGE_TAG}", "-f Backend-ToolRent/Dockerfile Backend-ToolRent")
                     
                     docker.withRegistry("https://index.docker.io/v1/", "${env.DOCKERHUB_CREDENTIALS}") {
@@ -55,11 +54,9 @@ pipeline {
                         string(credentialsId: 'KEYCLOAK_ADMIN_PASS', variable: 'KEYCLOAK_ADMIN_PASS')
                     ]) {
                         script {
-                            // 1. Preparar carpetas en el servidor
                             sh "ssh -o StrictHostKeyChecking=no ${env.TARGET_USER}@${env.TARGET_HOST} 'mkdir -p ${env.DEPLOY_DIR}/config/keycloak-realm'"
 
-                            // 2. Copiar archivos (docker-compose, nginx, keycloak config)
-                            // Copiamos el .prod.yml y lo renombramos a docker-compose.yml en destino
+                            // Copiar archivos (docker-compose, nginx, keycloak config)
                             sh "scp Deployment/docker-compose.prod.yml ${env.TARGET_USER}@${env.TARGET_HOST}:${env.DEPLOY_DIR}/docker-compose.yml"
                             sh "scp Backend-ToolRent/nginx.conf ${env.TARGET_USER}@${env.TARGET_HOST}:${env.DEPLOY_DIR}/config/nginx.conf"
                             sh "scp -r Backend-ToolRent/keycloak-realm/* ${env.TARGET_USER}@${env.TARGET_HOST}:${env.DEPLOY_DIR}/config/keycloak-realm/"
@@ -78,7 +75,7 @@ pipeline {
                                 export KEYCLOAK_REALM_PATH=./config/keycloak-realm
                             """
 
-                            // 4. Ejecutar comandos Docker en remoto
+                            // Ejecutar comandos Docker en remoto
                             sh """
                                 ssh -o StrictHostKeyChecking=no ${env.TARGET_USER}@${env.TARGET_HOST} '
                                     cd ${env.DEPLOY_DIR} && \\

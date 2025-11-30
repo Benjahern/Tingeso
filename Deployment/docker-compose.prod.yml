@@ -13,6 +13,11 @@ services:
       - ./data.sql:/docker-entrypoint-initdb.d/data.sql
     networks:
       - toolrent-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
     restart: unless-stopped
 
   keycloak:
@@ -35,6 +40,12 @@ services:
       - ${KEYCLOAK_REALM_PATH:-../Backend-ToolRent/keycloak-realm}:/opt/keycloak/data/import  
     networks:
       - toolrent-network
+    healthcheck:
+      test: ["CMD-SHELL", "exec 3<>/dev/tcp/127.0.0.1/8080; echo -e 'GET /health/ready HTTP/1.1\\r\\nHost: localhost\\r\\nConnection: close\\r\\n\\r\\n' >&3; cat <&3 | grep -q '200 OK'"]
+      interval: 10s
+      timeout: 5s
+      retries: 15
+      start_period: 30s
     restart: unless-stopped
 
   toolrent-backend-1:

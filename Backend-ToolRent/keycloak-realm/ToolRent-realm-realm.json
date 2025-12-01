@@ -33,11 +33,14 @@
       "enabled": true,
       "publicClient": true,
       "redirectUris": [
-        "http://localhost/*",
         "http://localhost:5173/*",
-        "http://127.0.0.1/*"
+        "http://127.0.0.1:5173/*",
+        "http://localhost:8090/*",
+        "http://127.0.0.1:8090/*"
       ],
       "webOrigins": [
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
         "+"
       ],
       "protocol": "openid-connect",

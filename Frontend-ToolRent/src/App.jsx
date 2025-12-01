@@ -53,6 +53,7 @@ function App() {
       <div className="d-flex">
         <Sidebar />
         <Routes>
+          <Route path='/' element={<PrivateRoute element={<HomePage />} rolesAllowed={["EMPLOYEE", "ADMIN"]} />} />
 
           <Route path="/home" element={<PrivateRoute element={<HomePage />} rolesAllowed={["EMPLOYEE", "ADMIN"]} />} />
 

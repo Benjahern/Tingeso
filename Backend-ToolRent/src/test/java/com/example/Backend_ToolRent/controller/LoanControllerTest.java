@@ -15,18 +15,17 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDate;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.doThrow;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-// 1. Eliminamos las exclusiones para que Spring cargue la seguridad correctamente
 @WebMvcTest(controllers = LoanController.class)
 class LoanControllerTest {
 
@@ -39,11 +38,9 @@ class LoanControllerTest {
     @MockitoBean
     private WorkerService workerService;
 
-    // 2. Mockeamos el JwtDecoder para satisfacer la configuración de seguridad sin necesitar un servidor real
     @MockitoBean
     private JwtDecoder jwtDecoder;
 
-    // --- Helper Methods ---
     private LoansEntity buildLoan() {
         LoansEntity loan = new LoansEntity();
         loan.setLoanId(1L);
@@ -69,15 +66,13 @@ class LoanControllerTest {
         return client;
     }
 
-    // --- Tests de GET (Usamos .with(jwt()) para pasar la autorización) ---
-
     @Test
     @DisplayName("GET /api/loans/{id} devuelve préstamo por id")
     void getLoanById_returnsOk() throws Exception {
         given(loansService.getLoansById(1L)).willReturn(buildLoan());
 
         mockMvc.perform(get("/api/loans/{id}", 1L)
-                        .with(jwt()) // Simula un usuario autenticado genérico
+                        .with(jwt())
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.loanId").value(1L));
@@ -111,12 +106,10 @@ class LoanControllerTest {
         doNothing().when(loansService).removeLoansById(1L);
 
         mockMvc.perform(delete("/api/loans/{id}", 1L)
-                        .with(jwt().authorities(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_ADMIN")))) // Requiere ADMIN
+                        .with(jwt().authorities(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_ADMIN"))))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.message").value("Prestamo eliminado exitosamente"));
     }
-
-    // --- Tests de Filtros y Búsqueda ---
 
     @Test
     @DisplayName("GET /api/loans/search busca por nombre")
@@ -138,27 +131,23 @@ class LoanControllerTest {
                 .andExpect(status().isBadRequest());
     }
 
-    // --- Tests Críticos: CREATE & RETURN con JWT ---
-
     @Test
     @DisplayName("POST /api/loans crea préstamo exitosamente (JWT con Email)")
     void createLoan_success() throws Exception {
-        // Mock del worker y service
         given(workerService.getWorkerByMail("test@example.com")).willReturn(buildWorker());
         given(loansService.createLoan(anyLong(), anyLong(), any(), any(), anyList(), anyLong()))
                 .willReturn(buildLoan());
 
         String jsonBody = """
-            {
-                "clientId": 1,
-                "storeId": 2,
-                "startDate": "2025-01-01",
-                "endDate": "2025-01-05",
-                "toolIds": [10, 20]
-            }
-        """;
+                {
+                    "clientId": 1,
+                    "storeId": 2,
+                    "startDate": "2025-01-01",
+                    "endDate": "2025-01-05",
+                    "toolIds": [10, 20]
+                }
+                """;
 
-        // 3. Aquí el JWT ahora sí se inyecta en el SecurityContext gracias a que quitamos addFilters=false
         mockMvc.perform(post("/api/loans")
                         .with(jwt().jwt(jwt -> jwt.claim("email", "test@example.com")))
                         .contentType(MediaType.APPLICATION_JSON)
@@ -170,12 +159,11 @@ class LoanControllerTest {
     @Test
     @DisplayName("POST /api/loans maneja excepción y devuelve 500")
     void createLoan_exception_returns500() throws Exception {
-        // Forzamos error en el servicio
         given(workerService.getWorkerByMail(anyString())).willThrow(new RuntimeException("DB Error"));
 
         String jsonBody = """
-            { "clientId": 1, "storeId": 2, "startDate": "2025-01-01", "endDate": "2025-01-05", "toolIds": [] }
-        """;
+                { "clientId": 1, "storeId": 2, "startDate": "2025-01-01", "endDate": "2025-01-05", "toolIds": [] }
+                """;
 
         mockMvc.perform(post("/api/loans")
                         .with(jwt().jwt(jwt -> jwt.claim("email", "test@example.com")))
@@ -189,12 +177,8 @@ class LoanControllerTest {
     @DisplayName("POST /api/loans/{id}/return devuelve préstamo exitosamente")
     void returnLoan_success() throws Exception {
         given(workerService.getWorkerByMail("test@example.com")).willReturn(buildWorker());
-
-        // Esperamos un Map<Long, String> donde la Key es el ID de la herramienta y el Value es el estado
         given(loansService.returnLoan(eq(1L), eq(99L), anyMap())).willReturn(buildLoan());
 
-        // CORRECCIÓN: Usamos un mapa con clave numérica (ID de la herramienta) -> Estado
-        // Ejemplo: La herramienta con ID 10 se devuelve en estado "good"
         String jsonBody = "{\"10\": \"good\"}";
 
         mockMvc.perform(post("/api/loans/{id}/return", 1L)
@@ -205,4 +189,115 @@ class LoanControllerTest {
                 .andExpect(jsonPath("$.loanId").value(1L));
     }
 
+    // --- Nuevos Tests para Cobertura del 100% ---
+
+    @Test
+    @DisplayName("GET /api/loans/inactive devuelve préstamos inactivos")
+    void getInactiveLoans_returnsOk() throws Exception {
+        given(loansService.getLoansByInactive()).willReturn(List.of(buildLoan()));
+        mockMvc.perform(get("/api/loans/inactive").with(jwt()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].loanId").value(1L));
+    }
+
+    @Test
+    @DisplayName("GET /api/loans/client/{clientId} devuelve préstamos por cliente")
+    void getAllLoansByClientId_returnsOk() throws Exception {
+        given(loansService.getLoansByClientId(1L)).willReturn(List.of(buildLoan()));
+        mockMvc.perform(get("/api/loans/client/{clientId}", 1L).with(jwt()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].loanId").value(1L));
+    }
+
+    @Test
+    @DisplayName("GET /api/loans/by-start-date devuelve préstamos por fecha de inicio")
+    void getLoanByStartDate_returnsOk() throws Exception {
+        given(loansService.getByLoanStart(any(LocalDate.class))).willReturn(List.of(buildLoan()));
+        mockMvc.perform(get("/api/loans/by-start-date")
+                        .param("startDate", "2025-01-01")
+                        .with(jwt()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].loanId").value(1L));
+    }
+
+    @Test
+    @DisplayName("GET /api/loans/by-end-date devuelve préstamos por fecha de fin")
+    void getLoanByEndDate_returnsOk() throws Exception {
+        given(loansService.getByLoanEnd(any(LocalDate.class))).willReturn(List.of(buildLoan()));
+        mockMvc.perform(get("/api/loans/by-end-date")
+                        .param("endDate", "2025-01-05")
+                        .with(jwt()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].loanId").value(1L));
+    }
+
+    @Test
+    @DisplayName("GET /api/loans/before-date devuelve préstamos activos antes de la fecha")
+    void getLoanBeforeDate_returnsOk() throws Exception {
+        given(loansService.getActiveBeforeDate(any(LocalDate.class))).willReturn(List.of(buildLoan()));
+        mockMvc.perform(get("/api/loans/before-date")
+                        .param("beforeDate", "2025-01-10")
+                        .with(jwt()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].loanId").value(1L));
+    }
+
+    @Test
+    @DisplayName("GET /api/loans/by-client-rut devuelve préstamos por RUT")
+    void getLoansByClientRut_returnsOk() throws Exception {
+        given(loansService.getLoansByClientRut("12345678-9")).willReturn(List.of(buildLoan()));
+        mockMvc.perform(get("/api/loans/by-client-rut")
+                        .param("rut", "12345678-9")
+                        .with(jwt()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].loanId").value(1L));
+    }
+
+    @Test
+    @DisplayName("GET /api/loans/active-by-rut devuelve préstamos activos por RUT")
+    void getActiveLoansByClientRut_returnsOk() throws Exception {
+        given(loansService.getActiveLoansByClientRut("12345678-9")).willReturn(List.of(buildLoan()));
+        mockMvc.perform(get("/api/loans/active-by-rut")
+                        .param("rut", "12345678-9")
+                        .with(jwt()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].loanId").value(1L));
+    }
+
+    @Test
+    @DisplayName("GET /api/loans/search busca por RUT")
+    void searchLoan_withRut_returnsOk() throws Exception {
+        given(loansService.getLoansByClientRut("12345678-9")).willReturn(List.of(buildLoan()));
+        mockMvc.perform(get("/api/loans/search")
+                        .param("rut", "12345678-9")
+                        .with(jwt()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].loanId").value(1L));
+    }
+
+    @Test
+    @DisplayName("GET /api/loans/clientfine/{fine} devuelve clientes con multas")
+    void getClientsWithFine_returnsOk() throws Exception {
+        given(loansService.getClientsWithFine(100L)).willReturn(List.of(buildClient()));
+        mockMvc.perform(get("/api/loans/clientfine/{fine}", 100L).with(jwt()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].name").value("Juan Perez"));
+    }
+
+    @Test
+    @DisplayName("POST /api/loans/{id}/return maneja excepción y devuelve 400")
+    void returnLoan_exception_returnsBadRequest() throws Exception {
+        given(workerService.getWorkerByMail(anyString())).willReturn(buildWorker());
+        given(loansService.returnLoan(anyLong(), anyLong(), anyMap())).willThrow(new RuntimeException("Error en la devolución"));
+
+        String jsonBody = "{\"10\": \"broken\"}";
+
+        mockMvc.perform(post("/api/loans/{id}/return", 1L)
+                        .with(jwt().jwt(jwt -> jwt.claim("email", "test@example.com")))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonBody))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error").value("Error en la devolución"));
+    }
 }
+

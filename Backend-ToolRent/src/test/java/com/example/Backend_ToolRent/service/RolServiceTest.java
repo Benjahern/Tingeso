@@ -16,8 +16,10 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.never;
 
 @ExtendWith(MockitoExtension.class)
 class RolServiceTest {
@@ -81,5 +83,60 @@ class RolServiceTest {
         List<RolEntity> result = rolService.getAllRoles();
 
         assertThat(result).hasSize(1);
+    }
+
+    // --- Nuevos Tests para Cobertura del 100% ---
+
+    @Test
+    @DisplayName("getRolById lanza EntityNotFoundException si no existe")
+    void getRolById_throwsIfNotFound() {
+        given(rolRepository.findById(anyLong())).willReturn(Optional.empty());
+
+        assertThatThrownBy(() -> rolService.getRolById(999L))
+                .isInstanceOf(EntityNotFoundException.class)
+                .hasMessageContaining("Rol no encontrado con ID: 999");
+    }
+
+    @Test
+    @DisplayName("getRolByName devuelve rol si existe")
+    void getRolByName_returnsRol() {
+        given(rolRepository.findByRolName("ADMIN")).willReturn(Optional.of(buildRol()));
+
+        RolEntity result = rolService.getRolByName("admin"); // minúscula
+
+        assertThat(result.getRolName()).isEqualTo("ADMIN");
+        verify(rolRepository).findByRolName("ADMIN"); // Verifica normalización
+    }
+
+    @Test
+    @DisplayName("getRolByName lanza EntityNotFoundException si no existe")
+    void getRolByName_throwsIfNotFound() {
+        given(rolRepository.findByRolName("SUPERADMIN")).willReturn(Optional.empty());
+
+        assertThatThrownBy(() -> rolService.getRolByName("SUPERADMIN"))
+                .isInstanceOf(EntityNotFoundException.class)
+                .hasMessageContaining("Rol no encontrado con nombre: SUPERADMIN");
+    }
+
+    @Test
+    @DisplayName("deleteRol elimina rol si existe")
+    void deleteRol_deletesRol() {
+        given(rolRepository.existsById(1L)).willReturn(true);
+
+        rolService.deleteRol(1L);
+
+        verify(rolRepository).deleteById(1L);
+    }
+
+    @Test
+    @DisplayName("deleteRol lanza EntityNotFoundException si no existe")
+    void deleteRol_throwsIfNotFound() {
+        given(rolRepository.existsById(999L)).willReturn(false);
+
+        assertThatThrownBy(() -> rolService.deleteRol(999L))
+                .isInstanceOf(EntityNotFoundException.class)
+                .hasMessageContaining("No se puede eliminar: Rol no encontrado con ID: 999");
+
+        verify(rolRepository, never()).deleteById(anyLong());
     }
 }

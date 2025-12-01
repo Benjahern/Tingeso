@@ -36,7 +36,7 @@ public class KeycloakService {
     @Value("${keycloak.admin-client-id}")
     private String clientId;
 
-    private Keycloak getKeycloakInstance() {
+    protected Keycloak getKeycloakInstance() {
         System.out.println("=== Conectando a Keycloak ===");
         System.out.println("Server: " + serverUrl);
         System.out.println("Realm auth: master");

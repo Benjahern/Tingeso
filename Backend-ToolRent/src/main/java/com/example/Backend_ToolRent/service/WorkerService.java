@@ -17,11 +17,11 @@ public class WorkerService {
 
     private final WorkerRepository workerRepo;
 
-    @Autowired
-    private  KeycloakService keycloakService;
+    private final KeycloakService keycloakService;
 
-    public WorkerService(WorkerRepository workerRepo) {
+    public WorkerService(WorkerRepository workerRepo, KeycloakService keycloakService) {
         this.workerRepo = workerRepo;
+        this.keycloakService = keycloakService;
     }
 
     @Transactional

@@ -19,11 +19,12 @@ pipeline {
         stage('Test Backend') {
             steps {
                 script {
-                    echo "--- Ejecutando Tests Unitarios del Backend ---"
-                    // Usamos una imagen de Maven temporal para correr los tests sin ensuciar el agente
-                    docker.image('maven:3.9-eclipse-temurin-17').inside('-v /root/.m2:/root/.m2') {
-                        sh 'cd Backend-ToolRent && mvn clean test'
-                    }
+                    echo "--- Ejecutando Tests Unitarios del Backend (Modo Directo) ---"
+                    // Ejecutamos un contenedor 'desechable' (--rm) que monta el código actual y corre los tests
+                    // Usamos el usuario root (0:0) temporalmente dentro del contenedor para evitar lios de permisos con el volumen
+                    sh """
+                        docker run --rm -v "${WORKSPACE}/Backend-ToolRent":/app -v /root/.m2:/root/.m2 -w /app maven:3.9-eclipse-temurin-17 mvn clean test
+                    """
                 }
             }
         }

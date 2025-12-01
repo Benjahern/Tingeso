@@ -14,6 +14,20 @@ pipeline {
     }
 
     stages {
+
+
+        stage('Test Backend') {
+            steps {
+                script {
+                    echo "--- Ejecutando Tests Unitarios del Backend ---"
+                    // Usamos una imagen de Maven temporal para correr los tests sin ensuciar el agente
+                    docker.image('maven:3.9-eclipse-temurin-17').inside('-v /root/.m2:/root/.m2') {
+                        sh 'cd Backend-ToolRent && mvn clean test'
+                    }
+                }
+            }
+        }
+        
         stage('Build & Push Backend') {
             steps {
                 script {

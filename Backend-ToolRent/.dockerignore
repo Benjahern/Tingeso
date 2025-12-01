@@ -1,0 +1,24 @@
+# Ignorar control de versiones (muy importante para velocidad)
+.git
+.gitignore
+
+# Ignorar builds locales previos
+target/
+build/
+out/
+
+# Ignorar configuraciones de IDEs
+.idea/
+.vscode/
+*.iml
+*.class
+
+# Ignorar archivos innecesarios para el runtime
+HELP.md
+mvnw
+mvnw.cmd
+.mvn/
+
+# Si tienes documentación o logs
+*.log
+*.md

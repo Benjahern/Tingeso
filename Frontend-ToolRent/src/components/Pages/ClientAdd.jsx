@@ -24,8 +24,6 @@ const ClientAdd = () => {
         e.preventDefault();
         const client = {rut, name, phone, mail, address, state, debt };
         
-            // removed verbose debug logs
-            console.log('ID parameter:', id);
                 
                 
         

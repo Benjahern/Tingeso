@@ -5,6 +5,7 @@ import workerService from '../../services/worker.service';
 import roleService from '../../services/role.service';
 
 const AddWorker = () => {
+    // the struct data for the worker-user
     const [formData, setFormData] = useState({
         name: '',
         mail: '',
@@ -20,6 +21,7 @@ const AddWorker = () => {
         loadRoles();
     }, []);
 
+    //for the assignation of the roles
     const loadRoles = async () => {
         try{
             const response = await roleService.getAllRoles();

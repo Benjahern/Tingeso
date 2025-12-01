@@ -86,7 +86,7 @@ services:
     
     # Healthcheck simplificado para el backend también
     healthcheck:
-      test: ["CMD-SHELL", "timeout 5s bash -c 'cat < /dev/null > /dev/tcp/127.0.0.1/8090'"]
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://127.0.0.1:8090/ || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 15

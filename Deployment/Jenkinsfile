@@ -87,7 +87,7 @@ pipeline {
                                 export DB_PASS=${DB_PASS}
                                 export KEYCLOAK_ADMIN_USER=admin
                                 export KEYCLOAK_ADMIN_PASS=${KEYCLOAK_ADMIN_PASS}
-                                export DOMAIN_NAME=${env.TARGET_HOST}
+                                export DOMAIN_NAME=localhost
                                 export NGINX_CONF_PATH=./config/nginx.conf
                                 export KEYCLOAK_REALM_PATH=./config/keycloak-realm
                             """

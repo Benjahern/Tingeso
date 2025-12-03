@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import React from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import toolService from "../../services/tool.service";
+import toolService from "../../../services/tool.service";
 import { Form, InputGroup } from "react-bootstrap";
 import unitService from "../../../services/unit.service";
 import httpClient from '../../../http-common';

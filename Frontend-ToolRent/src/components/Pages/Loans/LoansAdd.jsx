@@ -1,15 +1,15 @@
 import React, { use, useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import ClientSearchTypeahead from '../common/ClientTypeaHead';
+import ClientSearchTypeahead from '../../common/ClientTypeaHead';
 import Button from 'react-bootstrap/Button';
 import Card from 'react-bootstrap/Card';
 import Form from 'react-bootstrap/Form';
 import Alert from 'react-bootstrap/Alert';
-import loansService from '../../services/loans.service';
+import loansService from '../../../services/loans.service';
 import { PersonFill, XCircleFill } from 'react-bootstrap-icons';
 import Badge from 'react-bootstrap/Badge';
-import toolService from '../../services/tool.service';
-import DateRangeFilter from '../common/DateRangeFilter';
+import toolService from '../../../services/tool.service';
+import DateRangeFilter from '../../common/DateRangeFilter';
 
 
 

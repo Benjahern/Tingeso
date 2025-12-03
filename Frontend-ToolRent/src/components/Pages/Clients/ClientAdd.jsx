@@ -1,9 +1,11 @@
 import { useState, useEffect } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
-import clientService from "../../services/client.service";
+import clientService from "../../../services/client.service";
 import React from "react";
 import Form from 'react-bootstrap/Form';
 import { InputGroup } from "react-bootstrap";
+
+// Page for add client to the page
 
 const ClientAdd = () => {
     const [rut, setRut] = useState("");

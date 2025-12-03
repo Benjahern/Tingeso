@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
-import clientService from '../../services/client.service';
-import DateRangeFilter from '../common/DateRangeFilter';
+import clientService from '../../../services/client.service';
+import DateRangeFilter from '../../common/DateRangeFilter';
 import Table from 'react-bootstrap/Table';
 import Button from 'react-bootstrap/Button';
 import Card from 'react-bootstrap/Card';
-import loansService from '../../services/loans.service';
+import loansService from '../../../services/loans.service';
 
+// Page of the all loans from the client wath did it select
 
 const filterByDateRange = (loansData, startDate, endDate) => {
   if (!startDate && !endDate) {

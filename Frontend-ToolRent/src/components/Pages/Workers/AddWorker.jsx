@@ -1,8 +1,8 @@
 import React, { useState, useEffect} from 'react';
 import { Container, Card, Form, Button } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
-import workerService from '../../services/worker.service';
-import roleService from '../../services/role.service';
+import workerService from '../../../services/worker.service';
+import roleService from '../../../services/role.service';
 
 const AddWorker = () => {
     // the struct data for the worker-user

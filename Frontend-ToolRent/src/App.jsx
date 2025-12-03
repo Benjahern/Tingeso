@@ -2,22 +2,22 @@ import React from 'react'
 import './App.css'
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import HomePage from './components/Pages/HomePage';
-import ClientPage from './components/Pages/ClientPage';
-import ClientAdd from './components/Pages/ClientAdd';
+import ClientPage from './components/Pages/Clients/ClientPage';
+import ClientAdd from './components/Pages/Clients/ClientAdd';
 import Sidebar from './components/Pages/Sidebar';
 import { useKeycloak } from '@react-keycloak/web';
-import InventoryPage from './components/Pages/InventoryPage';
-import ToolAdd from './components/Pages/ToolAdd';
-import UnitPage from './components/Pages/UnitPage';
-import UnitAddEditPage from './components/Pages/UnitAddEditPage';
-import LoansPage from './components/Pages/LoansPage';
-import ToolSelect from './components/Pages/ToolSelect';
-import LoansAdd from './components/Pages/LoansAdd';
-import LoanDetails from './components/Pages/LoanDetails';
+import InventoryPage from './components/Pages/Tools/InventoryPage';
+import ToolAdd from './components/Pages/Tools/ToolAdd';
+import UnitPage from './components/Pages/Tools/UnitPage';
+import UnitAddEditPage from './components/Pages/Tools/UnitAddEditPage';
+import LoansPage from './components/Pages/Loans/LoansPage';
+import ToolSelect from './components/Pages/Loans/ToolSelect';
+import LoansAdd from './components/Pages/Loans/LoansAdd';
+import LoanDetails from './components/Pages/Loans/LoanDetails';
 import SettingsPage from './components/Pages/SettingsPage';
-import WorkerPage from './components/Pages/WorkerPage';
-import AddWorker from './components/Pages/AddWorker';
-import ClientLoans from './components/Pages/ClientLoans';
+import WorkerPage from './components/Pages/Workers/WorkerPage';
+import AddWorker from './components/Pages/Workers/AddWorker';
+import ClientLoans from './components/Pages/Clients/ClientLoans';
 import ToolHistory from './components/Pages/ToolHistory';
 import History from  './components/Pages/History'
 

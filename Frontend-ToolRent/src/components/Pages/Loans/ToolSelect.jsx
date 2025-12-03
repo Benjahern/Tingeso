@@ -1,9 +1,9 @@
 import React, {useEffect, useState} from 'react';
 import Card from 'react-bootstrap/Card';
 import { Link, useNavigate} from 'react-router-dom';
-import toolService from '../../services/tool.service';
+import toolService from '../../../services/tool.service';
 import { Button } from 'react-bootstrap';
-import httpClient from '../../http-common';
+import httpClient from '../../../http-common';
 import Row from 'react-bootstrap/Row';
 import { CheckCircleFill } from 'react-bootstrap-icons';
 import Badge from 'react-bootstrap/Badge';

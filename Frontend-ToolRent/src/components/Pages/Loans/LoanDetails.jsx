@@ -1,11 +1,11 @@
 import  React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import loanService from '../../services/loans.service';
+import loanService from '../../../services/loans.service';
 import Card from 'react-bootstrap/Card';
 import { Button, Modal, Form } from 'react-bootstrap';
 import Table from 'react-bootstrap/Table';
-import ReturnLoanModal from '../common/ReturnLoanModal';
+import ReturnLoanModal from '../../common/ReturnLoanModal';
 
 const LoanDetails = () => {
     const { loanId } = useParams();

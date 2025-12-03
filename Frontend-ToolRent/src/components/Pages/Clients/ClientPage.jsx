@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import clientService from "../../services/client.service";
+import clientService from "../../../services/client.service";
 import React from "react";
 import Table from 'react-bootstrap/Table';
 import Button from 'react-bootstrap/Button';
@@ -9,6 +9,7 @@ import InputGroup from 'react-bootstrap/InputGroup';
 import Form from 'react-bootstrap/Form';
 import { Search } from "react-bootstrap-icons";
 
+// Page for the view of the clients
 
 const ClientPage = () => {
 

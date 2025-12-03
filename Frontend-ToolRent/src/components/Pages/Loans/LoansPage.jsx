@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import loanService from "../../services/loans.service";
+import loanService from "../../../services/loans.service";
 import Form from 'react-bootstrap/Form';
 import InputGroup from 'react-bootstrap/InputGroup';
 import Button from 'react-bootstrap/Button';
 import { Search } from "react-bootstrap-icons";
 import Table from 'react-bootstrap/Table';
-import DateRangeFilter from '../common/DateRangeFilter';
+import DateRangeFilter from '../../common/DateRangeFilter';
 
 const LoansPage = () => {
     const [loans, setLoans] = useState([]);

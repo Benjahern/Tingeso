@@ -15,15 +15,13 @@ pipeline {
 
     stages {
 
-
         stage('Test Backend') {
             steps {
                 script {
                     echo "--- Ejecutando Tests Unitarios del Backend (Modo Directo) ---"
-                    // Ejecutamos un contenedor 'desechable' (--rm) que monta el código actual y corre los tests
-                    // Usamos el usuario root (0:0) temporalmente dentro del contenedor para evitar lios de permisos con el volumen
+                    // CORREGIDO: Agregado 'Evaluacion 1' a la ruta y mantenido comillas dobles
                     sh """
-                        docker run --rm -v "${WORKSPACE}/Backend-ToolRent":/app -v /root/.m2:/root/.m2 -w /app maven:3.9-eclipse-temurin-17 mvn clean test
+                        docker run --rm -v "${WORKSPACE}/Evaluacion 1/Backend-ToolRent":/app -v /root/.m2:/root/.m2 -w /app maven:3.9-eclipse-temurin-17 mvn clean test
                     """
                 }
             }
@@ -33,14 +31,16 @@ pipeline {
             steps {
                 script {
                     echo "--- Construyendo Backend con BuildKit ---"
+                    // CORREGIDO: Agregado 'Evaluacion 1' a la ruta del Dockerfile y del Contexto.
+                    // IMPORTANTE: Se usan comillas escapadas \"...\" porque hay espacios en el nombre de la carpeta
                     sh """
                         DOCKER_BUILDKIT=1 docker build \
                             --build-arg BUILDKIT_INLINE_CACHE=1 \
                             --cache-from ${env.BACKEND_IMAGE_NAME}:latest \
                             -t ${env.BACKEND_IMAGE_NAME}:${env.IMAGE_TAG} \
                             -t ${env.BACKEND_IMAGE_NAME}:latest \
-                            -f Backend-ToolRent/Dockerfile \
-                            Backend-ToolRent
+                            -f "Evaluacion 1/Backend-ToolRent/Dockerfile" \
+                            "Evaluacion 1/Backend-ToolRent"
                     """
                     
                     docker.withRegistry("https://index.docker.io/v1/", "${env.DOCKERHUB_CREDENTIALS}") {
@@ -56,7 +56,10 @@ pipeline {
             steps {
                 script {
                     echo "--- Construyendo Frontend para: ${env.FRONTEND_IMAGE_NAME}:${env.IMAGE_TAG} ---"
-                    def frontendImage = docker.build("${env.FRONTEND_IMAGE_NAME}:${env.IMAGE_TAG}", "-f Frontend-ToolRent/Dockerfile Frontend-ToolRent")
+                    // CORREGIDO: Agregado 'Evaluacion 1' a las rutas. 
+                    // Se usan comillas simples dentro del string para manejar el espacio.
+                    def frontendImage = docker.build("${env.FRONTEND_IMAGE_NAME}:${env.IMAGE_TAG}", "-f 'Evaluacion 1/Frontend-ToolRent/Dockerfile' 'Evaluacion 1/Frontend-ToolRent'")
+                    
                     docker.withRegistry("https://index.docker.io/v1/", "${env.DOCKERHUB_CREDENTIALS}") {
                         frontendImage.push()
                         frontendImage.push("latest")
@@ -75,9 +78,11 @@ pipeline {
                         script {
                             sh "ssh -o StrictHostKeyChecking=no ${env.TARGET_USER}@${env.TARGET_HOST} 'mkdir -p ${env.DEPLOY_DIR}/config/keycloak-realm'"
                             
-                            sh "scp Deployment/docker-compose.prod.yml ${env.TARGET_USER}@${env.TARGET_HOST}:${env.DEPLOY_DIR}/docker-compose.yml"
-                            sh "scp Backend-ToolRent/nginx.conf ${env.TARGET_USER}@${env.TARGET_HOST}:${env.DEPLOY_DIR}/config/nginx.conf"
-                            sh "scp -r Backend-ToolRent/keycloak-realm/* ${env.TARGET_USER}@${env.TARGET_HOST}:${env.DEPLOY_DIR}/config/keycloak-realm/"
+                            // CORREGIDO: Todas las rutas de origen ahora tienen "Evaluacion 1/" al inicio
+                            // y están envueltas en comillas dobles para que el shell no rompa con el espacio.
+                            sh "scp \"Evaluacion 1/Deployment/docker-compose.prod.yml\" ${env.TARGET_USER}@${env.TARGET_HOST}:${env.DEPLOY_DIR}/docker-compose.yml"
+                            sh "scp \"Evaluacion 1/Backend-ToolRent/nginx.conf\" ${env.TARGET_USER}@${env.TARGET_HOST}:${env.DEPLOY_DIR}/config/nginx.conf"
+                            sh "scp -r \"Evaluacion 1/Backend-ToolRent/keycloak-realm/\"* ${env.TARGET_USER}@${env.TARGET_HOST}:${env.DEPLOY_DIR}/config/keycloak-realm/"
 
                             def env_vars = """
                                 export BACKEND_IMAGE_NAME=${env.BACKEND_IMAGE_NAME}
@@ -102,11 +107,10 @@ pipeline {
                                     docker compose up -d --no-build
 
                                     echo "--- Esperando a que Keycloak inicie para configurarlo ---"
-                                    # wait-for- it
+                                    
                                     RETRIES=24
                                     COUNT=0
 
-                                    # Bucle: Intenta hacer curl hasta que devuelva estado 200 (OK)
                                     until curl -s -f -o /dev/null "http://localhost:8080/realms/master"; do
                                         if [ \$COUNT -ge \$RETRIES ]; then
                                             echo "❌ Error: Keycloak no inició después de 2 minutos."

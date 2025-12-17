@@ -1,0 +1,39 @@
+services:
+  inventory-service:
+    build:
+      context: ../Microservices/inventory-service
+      dockerfile: Dockerfile-dev
+      target: dev
+    volumes:
+      - ../Microservices/inventory-service:/app
+      - maven-cache:/root/.m2
+    environment:
+      - SERVER_PORT=8080
+      - SPRING_PROFILES_ACTIVE=dev
+      - URL_DB=${URL_DB}
+      - USER_DB=${USER_DB}
+      - PASS_DB=${PASS_DB}
+    depends_on:
+      - postgres
+    ports:
+      - "8080:8080"
+    networks: [micro]
+
+  postgres:
+    image: postgres:15
+    environment:
+      - POSTGRES_USER=${USER_DB}
+      - POSTGRES_PASSWORD=${PASS_DB}
+      - POSTGRES_DB=inventory
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks: [micro]
+
+networks:
+  micro:
+
+volumes:
+  maven-cache:
+  postgres-data:

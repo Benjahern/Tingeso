@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: microservices-config
+data:
+  # Config Service
+  URL_CONFIG: "http://config-service:8081"
+  
+  # Eureka
+  EUREKA_HOST: "eureka-service"
+  EUREKA_PORT: "8761"
+  
+  # PostgreSQL (complementa postgres-config)
+  POSTGRES_HOST: "postgres-service"
+  POSTGRES_PORT: "5432"
+  POSTGRES_DB: "tingesoDb"

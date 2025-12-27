@@ -1,0 +1,19 @@
+# Etapa única para DESARROLLO (hot reload)
+FROM maven:3.9.9-eclipse-temurin-21 AS dev
+WORKDIR /app
+
+# Copiamos el pom y bajamos dependencias usando caché de Maven
+COPY pom.xml .
+RUN --mount=type=cache,target=/root/.m2 mvn dependency:go-offline -B
+
+# Copiamos el código fuente
+COPY src ./src
+
+# Puerto lógico típico de Spring (interno del contenedor)
+EXPOSE 8081
+
+# Ejecutamos en modo dev con Spring Boot
+CMD ["mvn", "spring-boot:run", \
+     "-Dspring-boot.run.profiles=dev", \
+     "-Dspring.devtools.restart.enabled=true", \
+     "-Dspring.devtools.livereload.enabled=true"]

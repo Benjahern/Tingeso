@@ -2,6 +2,11 @@ server:
   port: 8081
 
 spring:
+  application:
+    name: config-service
+  docker:
+    compose:
+      enabled: false
   cloud:
     config:
       server:
@@ -9,6 +14,3 @@ spring:
           default-label: main
           uri: https://github.com/Benjahern/Tingeso
           search-paths: "EVALUACION 2/Microservices/config-data"
-          
-  application:
-    name: config-service

@@ -1,8 +1,5 @@
 spring:
   application:
     name: eureka-service
-  cloud:
-    config:
-      enabled: true
-      uri: ${URL_CONFIG}
-
+  config:
+    import: "optional:configserver:${URL_CONFIG:http://localhost:8081}"

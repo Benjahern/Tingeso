@@ -1,38 +1,271 @@
 services:
+  # ========================================
+  # INFRAESTRUCTURA - PostgreSQL (única BD compartida)
+  # ========================================
+  postgres:
+    image: postgres:15
+    container_name: postgres
+    environment:
+      - POSTGRES_USER=${USER_DB}
+      - POSTGRES_PASSWORD=${PASS_DB}
+      - POSTGRES_DB=tingeso_db
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    ports:
+      - "5433:5432"
+    networks: [ micro ]
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${USER_DB}" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ========================================
+  # SERVICIOS DE CONFIGURACIÓN
+  # ========================================
+  config-service:
+    build:
+      context: ../Microservices/config-service
+      dockerfile: Dockerfile-dev
+      target: dev
+    container_name: config-service
+    volumes:
+      - ../Microservices/config-service:/app
+      - maven-cache:/root/.m2
+    environment:
+      - SPRING_PROFILES_ACTIVE=dev
+    ports:
+      - "8081:8081"
+    networks: [ micro ]
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8081/actuator/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
+  eureka-service:
+    build:
+      context: ../Microservices/eureka-service
+      dockerfile: Dockerfile-dev
+      target: dev
+    container_name: eureka-service
+    volumes:
+      - ../Microservices/eureka-service:/app
+      - maven-cache:/root/.m2
+    environment:
+      - SPRING_PROFILES_ACTIVE=dev
+      - URL_CONFIG=${URL_CONFIG}
+      - EUREKA_HOST=eureka-service
+      - EUREKA_PORT=8761
+    ports:
+      - "8761:8761"
+    networks: [ micro ]
+    depends_on:
+      config-service:
+        condition: service_healthy
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8761/actuator/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
+  gateway-service:
+    build:
+      context: ../Microservices/gateway-service
+      dockerfile: Dockerfile-dev
+      target: dev
+    container_name: gateway-service
+    volumes:
+      - ../Microservices/gateway-service:/app
+      - maven-cache:/root/.m2
+    environment:
+      - SPRING_PROFILES_ACTIVE=dev
+      - URL_CONFIG=${URL_CONFIG}
+      - EUREKA_HOST=${EUREKA_HOST}
+      - EUREKA_PORT=${EUREKA_PORT}
+    ports:
+      - "8080:8080"
+    networks: [ micro ]
+    depends_on:
+      eureka-service:
+        condition: service_healthy
+
+  # ========================================
+  # MICROSERVICIOS DE NEGOCIO
+  # ========================================
+  clients-service:
+    build:
+      context: ../Microservices/clients-service
+      dockerfile: Dockerfile-dev
+      target: dev
+    container_name: clients-service
+    volumes:
+      - ../Microservices/clients-service:/app
+      - maven-cache:/root/.m2
+    environment:
+      - SPRING_PROFILES_ACTIVE=dev
+      - URL_CONFIG=${URL_CONFIG}
+      - EUREKA_HOST=${EUREKA_HOST}
+      - EUREKA_PORT=${EUREKA_PORT}
+      - URL_DB=${URL_DB}/clients
+      - USER_DB=${USER_DB}
+      - PASS_DB=${PASS_DB}
+    networks: [ micro ]
+    depends_on:
+      eureka-service:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+
+  users-service:
+    build:
+      context: ../Microservices/users-service
+      dockerfile: Dockerfile-dev
+      target: dev
+    container_name: users-service
+    volumes:
+      - ../Microservices/users-service:/app
+      - maven-cache:/root/.m2
+    environment:
+      - SPRING_PROFILES_ACTIVE=dev
+      - URL_CONFIG=${URL_CONFIG}
+      - EUREKA_HOST=${EUREKA_HOST}
+      - EUREKA_PORT=${EUREKA_PORT}
+      - URL_DB=${URL_DB}/users
+      - USER_DB=${USER_DB}
+      - PASS_DB=${PASS_DB}
+    networks: [ micro ]
+    depends_on:
+      eureka-service:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+
   inventory-service:
     build:
       context: ../Microservices/inventory-service
       dockerfile: Dockerfile-dev
       target: dev
+    container_name: inventory-service
     volumes:
       - ../Microservices/inventory-service:/app
       - maven-cache:/root/.m2
     environment:
-      - SERVER_PORT=8080
       - SPRING_PROFILES_ACTIVE=dev
-      - URL_DB=${URL_DB}
+      - URL_CONFIG=${URL_CONFIG}
+      - EUREKA_HOST=${EUREKA_HOST}
+      - EUREKA_PORT=${EUREKA_PORT}
+      - URL_DB=${URL_DB}/inventory
       - USER_DB=${USER_DB}
       - PASS_DB=${PASS_DB}
+    networks: [ micro ]
     depends_on:
-      - postgres
-    ports:
-      - "8080:8080"
-    networks: [micro]
+      eureka-service:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
 
-  postgres:
-    image: postgres:15
-    environment:
-      - POSTGRES_USER=${USER_DB}
-      - POSTGRES_PASSWORD=${PASS_DB}
-      - POSTGRES_DB=inventory
+  kardex-service:
+    build:
+      context: ../Microservices/kardex-service
+      dockerfile: Dockerfile-dev
+      target: dev
+    container_name: kardex-service
     volumes:
-      - postgres-data:/var/lib/postgresql/data
-    ports:
-      - "5432:5432"
-    networks: [micro]
+      - ../Microservices/kardex-service:/app
+      - maven-cache:/root/.m2
+    environment:
+      - SPRING_PROFILES_ACTIVE=dev
+      - URL_CONFIG=${URL_CONFIG}
+      - EUREKA_HOST=${EUREKA_HOST}
+      - EUREKA_PORT=${EUREKA_PORT}
+      - URL_DB=${URL_DB}/kardex
+      - USER_DB=${USER_DB}
+      - PASS_DB=${PASS_DB}
+    networks: [ micro ]
+    depends_on:
+      eureka-service:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+
+  loans-service:
+    build:
+      context: ../Microservices/loans-service
+      dockerfile: Dockerfile-dev
+      target: dev
+    container_name: loans-service
+    volumes:
+      - ../Microservices/loans-service:/app
+      - maven-cache:/root/.m2
+    environment:
+      - SPRING_PROFILES_ACTIVE=dev
+      - URL_CONFIG=${URL_CONFIG}
+      - EUREKA_HOST=${EUREKA_HOST}
+      - EUREKA_PORT=${EUREKA_PORT}
+      - URL_DB=${URL_DB}/loans
+      - USER_DB=${USER_DB}
+      - PASS_DB=${PASS_DB}
+    networks: [ micro ]
+    depends_on:
+      eureka-service:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+
+  rates-service:
+    build:
+      context: ../Microservices/rates-service
+      dockerfile: Dockerfile-dev
+      target: dev
+    container_name: rates-service
+    volumes:
+      - ../Microservices/rates-service:/app
+      - maven-cache:/root/.m2
+    environment:
+      - SPRING_PROFILES_ACTIVE=dev
+      - URL_CONFIG=${URL_CONFIG}
+      - EUREKA_HOST=${EUREKA_HOST}
+      - EUREKA_PORT=${EUREKA_PORT}
+      - URL_DB=${URL_DB}/rates
+      - USER_DB=${USER_DB}
+      - PASS_DB=${PASS_DB}
+    networks: [ micro ]
+    depends_on:
+      eureka-service:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+
+  reports-service:
+    build:
+      context: ../Microservices/reports-service
+      dockerfile: Dockerfile-dev
+      target: dev
+    container_name: reports-service
+    volumes:
+      - ../Microservices/reports-service:/app
+      - maven-cache:/root/.m2
+    environment:
+      - SPRING_PROFILES_ACTIVE=dev
+      - URL_CONFIG=${URL_CONFIG}
+      - EUREKA_HOST=${EUREKA_HOST}
+      - EUREKA_PORT=${EUREKA_PORT}
+      - URL_DB=${URL_DB}/reports
+      - USER_DB=${USER_DB}
+      - PASS_DB=${PASS_DB}
+    networks: [ micro ]
+    depends_on:
+      eureka-service:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
 
 networks:
   micro:
+
 
 volumes:
   maven-cache:

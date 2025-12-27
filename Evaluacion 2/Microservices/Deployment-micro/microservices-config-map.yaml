@@ -10,7 +10,11 @@ data:
   EUREKA_HOST: "eureka-service"
   EUREKA_PORT: "8761"
   
-  # PostgreSQL (complementa postgres-config)
+  # PostgreSQL
   POSTGRES_HOST: "postgres-service"
   POSTGRES_PORT: "5432"
-  POSTGRES_DB: "tingesoDb"
+  POSTGRES_DB: "tingeso_db"
+  URL_DB: "jdbc:postgresql://postgres-service:5432"
+  
+  # Keycloak
+  KEYCLOAK_URL: "http://keycloak-service:8080"

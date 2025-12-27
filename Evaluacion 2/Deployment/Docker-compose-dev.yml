@@ -21,6 +21,33 @@ services:
       retries: 5
 
   # ========================================
+  # KEYCLOAK - Autenticación y Autorización
+  # ========================================
+  keycloak:
+    image: quay.io/keycloak/keycloak:23.0
+    container_name: keycloak
+    command: start-dev
+    environment:
+      - KEYCLOAK_ADMIN=${KEYCLOAK_ADMIN:-admin}
+      - KEYCLOAK_ADMIN_PASSWORD=${KEYCLOAK_ADMIN_PASSWORD:-admin}
+      - KC_DB=postgres
+      - KC_DB_URL=jdbc:postgresql://postgres:5432/tingeso_db
+      - KC_DB_USERNAME=${USER_DB}
+      - KC_DB_PASSWORD=${PASS_DB}
+    ports:
+      - "8090:8080"
+    networks: [ micro ]
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8080/health/ready" ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
+  # ========================================
   # SERVICIOS DE CONFIGURACIÓN
   # ========================================
   config-service:
@@ -65,11 +92,11 @@ services:
       config-service:
         condition: service_healthy
     healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:8761/actuator/health" ]
+      test: [ "CMD", "wget", "-q", "--spider", "http://localhost:8761/actuator/health" ]
       interval: 30s
       timeout: 10s
-      retries: 5
-      start_period: 60s
+      retries: 10
+      start_period: 120s
 
   gateway-service:
     build:

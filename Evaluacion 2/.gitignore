@@ -1,0 +1,34 @@
+# =====================
+# IDE y SO
+# =====================
+.idea/
+*.iml
+.vscode/
+.DS_Store
+Thumbs.db
+
+# =====================
+# Java/Maven
+# =====================
+target/
+*.class
+*.jar
+*.war
+*.log
+
+# =====================
+# Kubernetes Secrets
+# =====================
+*-secret.yaml
+!*-secret.yaml.example
+
+# =====================
+# Variables de entorno
+# =====================
+.env
+!.env.example
+
+# =====================
+# Docker
+# =====================
+docker-compose.override.yml

@@ -3,6 +3,27 @@ spring:
     name: loans-service
   config:
     import: "optional:configserver:${URL_CONFIG:http://localhost:8081}"
-  docker:
-    compose:
-      enabled: false
+  datasource:
+    url: ${URL_DB:jdbc:postgresql://localhost:5432}/loans
+    username: ${USER_DB:admin}
+    password: ${PASS_DB:admin}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${KEYCLOAK_URL:http://localhost:8090}/realms/tingeso
+
+eureka:
+  client:
+    fetch-registry: true
+    register-with-eureka: true
+    service-url:
+      defaultZone: http://${EUREKA_HOST:localhost}:${EUREKA_PORT:8761}/eureka/
+  instance:
+    prefer-ip-address: true

@@ -4,9 +4,6 @@ server:
 spring:
   application:
     name: config-service
-  docker:
-    compose:
-      enabled: false
   cloud:
     config:
       server:
@@ -14,3 +11,17 @@ spring:
           default-label: main
           uri: https://github.com/Benjahern/Tingeso
           search-paths: "EVALUACION 2/Microservices/config-data"
+
+eureka:
+  client:
+    register-with-eureka: false
+    fetch-registry: false
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: always

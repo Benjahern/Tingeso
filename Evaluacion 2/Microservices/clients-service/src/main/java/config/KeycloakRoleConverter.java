@@ -1,4 +1,4 @@
-package com.example.loans_service;
+package config;
 
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.security.core.GrantedAuthority;

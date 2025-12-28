@@ -1,4 +1,4 @@
-package com.example.clients_service;
+package Config;
 
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.security.core.GrantedAuthority;

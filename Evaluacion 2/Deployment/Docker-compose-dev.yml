@@ -11,6 +11,7 @@ services:
       - POSTGRES_DB=tingeso_db
     volumes:
       - postgres-data:/var/lib/postgresql/data
+      - ./init-db.sh:/docker-entrypoint-initdb.d/init-db.sh
     ports:
       - "5433:5432"
     networks: [ micro ]
@@ -34,6 +35,9 @@ services:
       - KC_DB_URL=jdbc:postgresql://postgres:5432/tingeso_db
       - KC_DB_USERNAME=${USER_DB}
       - KC_DB_PASSWORD=${PASS_DB}
+      - KC_HOSTNAME=localhost
+      - KC_HOSTNAME_PORT=8090
+      - KC_HOSTNAME_STRICT=false
     ports:
       - "8090:8080"
     networks: [ micro ]
@@ -112,6 +116,9 @@ services:
       - URL_CONFIG=${URL_CONFIG}
       - EUREKA_HOST=${EUREKA_HOST}
       - EUREKA_PORT=${EUREKA_PORT}
+      - KEYCLOAK_URL=http://localhost:8090
+    extra_hosts:
+      - "localhost:host-gateway"
     ports:
       - "8080:8080"
     networks: [ micro ]
@@ -136,7 +143,7 @@ services:
       - URL_CONFIG=${URL_CONFIG}
       - EUREKA_HOST=${EUREKA_HOST}
       - EUREKA_PORT=${EUREKA_PORT}
-      - URL_DB=${URL_DB}/clients
+      - URL_DB=${URL_DB}
       - USER_DB=${USER_DB}
       - PASS_DB=${PASS_DB}
     networks: [ micro ]
@@ -160,9 +167,12 @@ services:
       - URL_CONFIG=${URL_CONFIG}
       - EUREKA_HOST=${EUREKA_HOST}
       - EUREKA_PORT=${EUREKA_PORT}
-      - URL_DB=${URL_DB}/users
+      - URL_DB=${URL_DB}
       - USER_DB=${USER_DB}
       - PASS_DB=${PASS_DB}
+      - KEYCLOAK_URL=http://keycloak:8080
+      - KEYCLOAK_ADMIN=${KEYCLOAK_ADMIN:-admin}
+      - KEYCLOAK_ADMIN_PASSWORD=${KEYCLOAK_ADMIN_PASSWORD:-admin}
     networks: [ micro ]
     depends_on:
       eureka-service:
@@ -184,7 +194,7 @@ services:
       - URL_CONFIG=${URL_CONFIG}
       - EUREKA_HOST=${EUREKA_HOST}
       - EUREKA_PORT=${EUREKA_PORT}
-      - URL_DB=${URL_DB}/inventory
+      - URL_DB=${URL_DB}
       - USER_DB=${USER_DB}
       - PASS_DB=${PASS_DB}
     networks: [ micro ]
@@ -208,7 +218,7 @@ services:
       - URL_CONFIG=${URL_CONFIG}
       - EUREKA_HOST=${EUREKA_HOST}
       - EUREKA_PORT=${EUREKA_PORT}
-      - URL_DB=${URL_DB}/kardex
+      - URL_DB=${URL_DB}
       - USER_DB=${USER_DB}
       - PASS_DB=${PASS_DB}
     networks: [ micro ]
@@ -232,7 +242,7 @@ services:
       - URL_CONFIG=${URL_CONFIG}
       - EUREKA_HOST=${EUREKA_HOST}
       - EUREKA_PORT=${EUREKA_PORT}
-      - URL_DB=${URL_DB}/loans
+      - URL_DB=${URL_DB}
       - USER_DB=${USER_DB}
       - PASS_DB=${PASS_DB}
     networks: [ micro ]
@@ -256,9 +266,12 @@ services:
       - URL_CONFIG=${URL_CONFIG}
       - EUREKA_HOST=${EUREKA_HOST}
       - EUREKA_PORT=${EUREKA_PORT}
-      - URL_DB=${URL_DB}/rates
+      - URL_DB=${URL_DB}
       - USER_DB=${USER_DB}
       - PASS_DB=${PASS_DB}
+      - KEYCLOAK_URL=http://localhost:8090
+    extra_hosts:
+      - "localhost:host-gateway"
     networks: [ micro ]
     depends_on:
       eureka-service:
@@ -280,7 +293,7 @@ services:
       - URL_CONFIG=${URL_CONFIG}
       - EUREKA_HOST=${EUREKA_HOST}
       - EUREKA_PORT=${EUREKA_PORT}
-      - URL_DB=${URL_DB}/reports
+      - URL_DB=${URL_DB}
       - USER_DB=${USER_DB}
       - PASS_DB=${PASS_DB}
     networks: [ micro ]

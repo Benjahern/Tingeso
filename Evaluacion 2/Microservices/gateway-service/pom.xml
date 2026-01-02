@@ -44,6 +44,12 @@
 			<artifactId>spring-boot-starter-oauth2-resource-server</artifactId>
 		</dependency>
 		
+		<!-- OAuth2 Client for TokenRelay filter -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-oauth2-client</artifactId>
+		</dependency>
+		
 		<!-- Devtools -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>

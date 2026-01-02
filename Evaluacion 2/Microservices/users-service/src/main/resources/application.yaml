@@ -17,7 +17,8 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: ${KEYCLOAK_URL:http://localhost:8090}/realms/tingeso
+          jwk-set-uri: http://keycloak:8080/realms/tingeso/protocol/openid-connect/certs
+          # issuer-uri: http://localhost:8090/realms/tingeso
 
 eureka:
   client:
@@ -27,3 +28,10 @@ eureka:
       defaultZone: http://${EUREKA_HOST:localhost}:${EUREKA_PORT:8761}/eureka/
   instance:
     prefer-ip-address: true
+
+keycloak:
+  server-url: ${KEYCLOAK_URL:http://localhost:8090}
+  realm: tingeso
+  admin-username: ${KEYCLOAK_ADMIN:admin}
+  admin-password: ${KEYCLOAK_ADMIN_PASSWORD:admin}
+  admin-client-id: admin-cli

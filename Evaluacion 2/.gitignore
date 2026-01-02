@@ -32,3 +32,8 @@ target/
 # Docker
 # =====================
 docker-compose.override.yml
+
+# =====================
+# Construccion
+# =====================
+init-db.sh

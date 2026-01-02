@@ -17,7 +17,8 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: ${KEYCLOAK_URL:http://localhost:8090}/realms/tingeso
+          jwk-set-uri: http://keycloak:8080/realms/tingeso/protocol/openid-connect/certs
+          # issuer-uri: http://localhost:8090/realms/tingeso
 
 eureka:
   client:

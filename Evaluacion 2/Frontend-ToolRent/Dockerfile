@@ -1,22 +1,35 @@
-# 1. Usar una imagen base de Node.js (LTS version recomendada)
-# 'alpine' es una versión ligera de Linux
-FROM node:20-alpine
+# =============================================================
+# Dockerfile para PRODUCCIÓN - Frontend React/Vite
+# Multi-stage build optimizado con Nginx
+# =============================================================
 
-# 2. Establecer el directorio de trabajo dentro del contenedor
+# Etapa 1: Build
+FROM node:20-alpine AS build
 WORKDIR /app
 
-# 3. Copiar los archivos de dependencias primero (para aprovechar la caché de Docker)
+# Copiar package.json y instalar dependencias
 COPY package*.json ./
+RUN npm ci --only=production=false
 
-# 4. Instalar las dependencias
-RUN npm install
-
-# 5. Copiar el resto del código fuente
+# Copiar código fuente y construir
 COPY . .
+RUN npm run build
 
-# 6. Exponer el puerto que usa tu framework (Vite suele usar 5173, React/Next 3000)
-# Ajusta este número según lo que diga tu consola al correr npm run dev localmente
-EXPOSE 5173 
+# Etapa 2: Servir con Nginx
+FROM nginx:alpine
 
-# 7. Ejecutar el comando de desarrollo
-CMD ["npm", "run", "dev", "--", "--host"]
+# Copiar la configuración personalizada de Nginx
+COPY nginx.conf /etc/nginx/nginx.conf
+
+# Copiar los archivos construidos
+COPY --from=build /app/dist /usr/share/nginx/html
+
+# Puerto de Nginx
+EXPOSE 80
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
+    CMD wget --no-verbose --tries=1 --spider http://localhost:80/ || exit 1
+
+# Ejecutar Nginx en foreground
+CMD ["nginx", "-g", "daemon off;"]

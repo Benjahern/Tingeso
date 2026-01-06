@@ -15,7 +15,9 @@ spec:
       containers:
       - name: keycloak
         image: quay.io/keycloak/keycloak:23.0
-        args: ["start-dev"]
+        args: 
+          - "start-dev"
+          - "--import-realm"
         env:
         - name: KEYCLOAK_ADMIN
           valueFrom:
@@ -50,6 +52,14 @@ spec:
           requests:
             memory: "512Mi"
             cpu: "500m"
+        volumeMounts:
+        - name: realm-config
+          mountPath: /opt/keycloak/data/import
+          readOnly: true
+      volumes:
+      - name: realm-config
+        configMap:
+          name: keycloak-realm-config
 ---
 apiVersion: v1
 kind: Service

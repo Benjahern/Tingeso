@@ -20,7 +20,7 @@ echo ""
 echo -e "${YELLOW}📋 Verificando Minikube...${NC}"
 if ! minikube status | grep -q "Running"; then
     echo -e "${RED}❌ Minikube no está corriendo. Iniciándolo...${NC}"
-    minikube start --cpus=4 --memory=8192 --driver=docker
+    minikube start --cpus=4 --memory=8192 --driver=kvm2
 fi
 echo -e "${GREEN}✅ Minikube OK${NC}"
 echo ""
@@ -39,6 +39,7 @@ kubectl apply -f postgres-secret.yaml
 kubectl apply -f postgres-init-configmap.yaml
 kubectl apply -f microservices-config-map.yaml
 kubectl apply -f keycloak-secret.yaml
+kubectl apply -f keycloak-realm-configmap.yaml
 echo -e "${GREEN}✅ ConfigMaps y Secrets aplicados${NC}"
 echo ""
 

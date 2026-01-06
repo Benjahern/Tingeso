@@ -1,4 +1,4 @@
-import React, { useState, useEffect} from 'react';
+import React, { useState, useEffect } from 'react';
 import { Container, Card, Form, Button } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import workerService from '../../../services/worker.service';
@@ -14,24 +14,15 @@ const AddWorker = () => {
     });
 
     const [selectedRoles, setSelectedRoles] = useState([]);
-    const [roles, setRoles] = useState([]);
+    // Hardcoded roles as requested
+    const [roles] = useState([
+        { rolId: 'ADMIN', rolName: 'ADMIN' },
+        { rolId: 'EMPLOYEE', rolName: 'EMPLOYEE' }
+    ]);
     const navigate = useNavigate();
 
-    useEffect(() => {
-        loadRoles();
-    }, []);
+    // Removed useEffect and loadRoles as roles are now static
 
-    //for the assignation of the roles
-    const loadRoles = async () => {
-        try{
-            const response = await roleService.getAllRoles();
-            setRoles(response.data);
-
-        } catch (error){
-            console.error('Error loading roles:', error);
-        }
-    };
-    
     const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData({
@@ -50,9 +41,10 @@ const AddWorker = () => {
         }
 
         try {
+            // Backend expects "rol" as a list of strings
             const dataToSend = {
                 ...formData,
-                roleIds: selectedRoles.map(id => Number(id))
+                rol: selectedRoles
             };
             await workerService.createWorker(dataToSend);
             alert('Worker added successfully!');
@@ -113,23 +105,23 @@ const AddWorker = () => {
                         </Form.Group>
                         <Form.Group className="mb-3" >
                             <Form.Label>Roles</Form.Label>
-                                {roles.map(role => (
-                                    <Form.Check
-                                        key={role.rolId}
-                                        type="checkbox"
-                                        id={`role-${role.rolId}`}
-                                        label={role.rolName}
-                                        value={role.rolId}
-                                        checked={selectedRoles.includes(role.rolId.toString())}
-                                        onChange={(e) => {
+                            {roles.map(role => (
+                                <Form.Check
+                                    key={role.rolId}
+                                    type="checkbox"
+                                    id={`role-${role.rolId}`}
+                                    label={role.rolName}
+                                    value={role.rolId}
+                                    checked={selectedRoles.includes(role.rolId.toString())}
+                                    onChange={(e) => {
                                         if (e.target.checked) {
                                             setSelectedRoles([...selectedRoles, role.rolId.toString()]);
                                         } else {
                                             setSelectedRoles(selectedRoles.filter(id => id !== role.rolId.toString()));
                                         }
-                                        }}
-                                    />
-                                    ))}
+                                    }}
+                                />
+                            ))}
                         </Form.Group>
 
                         <div className='d-flex gap-2'>

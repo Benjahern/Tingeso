@@ -26,7 +26,7 @@ const ToolAdd = () => {
     const isAdmin = keycloak?.hasRealmRole("ADMIN") || false;
 
     const [titleToolForm, setTitleToolForm] = useState("Añadir nueva herramienta");
-    
+
     const [originalTool, setOriginalTool] = useState(null);
 
     const navigate = useNavigate();
@@ -38,7 +38,7 @@ const ToolAdd = () => {
             if (file.type.startsWith("image/")) {
                 setImageFile(file);
                 setImagePreview(URL.createObjectURL(file));
-            }else{ 
+            } else {
                 alert("Por favor seleccione un archivo de imagen valido.");
                 e.target.value = "";
             }
@@ -48,31 +48,70 @@ const ToolAdd = () => {
     const saveTool = async (e) => {
         e.preventDefault();
         setLoading(true)
-        try{
-            const tool = {toolName, description, replacementValue, category, stock, dailyPrice};
-        
+        try {
+            const tool = { toolName, toolDescription: description, replacementValue, category, stock, dailyPrice };
+
 
             // debug: removed verbose logs
 
             if (id) { //editar
                 const confirmUpdate = window.confirm("¿Esta seguro que desea actualizar?");
-                if(!confirmUpdate){
-                    setLoading(false);    
+                if (!confirmUpdate) {
+                    setLoading(false);
                     return;
                 }
 
-                const response = await toolService.updateTool(id, tool);
-                // tool updated
+                console.log("Saving Tool. Mode: EDIT. ID:", id);
+                console.log("Tool Data:", tool);
+
+                // IMPORTANT: When creating new units, we do NOT want to overwrite the stock with the 'target' stock value here using updateTool.
+                // The UnitService backend now auto-increments stock for each unit created.
+                // If we send `stock: 20` here, and then create 5 units, the backend will do 20 -> 21 -> 22... -> 25.
+                // So, we update everything EXCEPT stock (pass the ORIGINAL stock).
+                // But wait, if we only updated name/description, stock shouldn't change. 
+                // We'll trust the loop below to add the necessary stock.
+
+                const toolToUpdate = { ...tool, stock: originalTool.stock };
+
+                console.log("Calling toolService.updateTool (preserving original stock)...");
+                await toolService.updateTool(id, toolToUpdate);
+                console.log("toolService.updateTool returned successfully.");
+
+                // If stock increased, create new units
+                if (originalTool && stock > originalTool.stock) {
+                    const quantityToAdd = stock - originalTool.stock;
+                    console.log(`Adding ${quantityToAdd} new units for stock increase...`);
+
+                    // We need the updated tool data schema for unit creation
+                    // We can reuse 'originalTool' merged with basic updates, but keep original stock or let backend handle it.
+                    const updatedToolMock = { ...originalTool, ...tool, toolId: id };
+
+                    for (let i = 0; i < quantityToAdd; i++) {
+                        try {
+                            const unitData = {
+                                tool: updatedToolMock,
+                                status: "Disponible",
+                                condition: "Bueno"
+                            };
+                            await unitService.createUnit(unitData);
+                        } catch (unitError) {
+                            console.error(`Error creating additional unit ${i + 1}:`, unitError);
+                        }
+                    }
+                }
 
                 //Imagen nueva
-                if (imageFile){
+                if (imageFile) {
                     await toolService.uploadImage(id, imageFile);
                 }
                 navigate("/inventory");
-            }else{
+            } else {
 
 
-                const response = await toolService.create(tool);
+                // Create tool with initial stock 0.
+                // The UnitService backend will auto-increment stock for each unit created in the loop below.
+                const toolToCreate = { ...tool, stock: 0 };
+                const response = await toolService.create(toolToCreate);
                 const createdTool = response.data;
                 // tool added successfully
 
@@ -88,33 +127,36 @@ const ToolAdd = () => {
                             status: "Disponible",
                             condition: "Bueno"
                         };
-                        
+
                         console.log(`Creando unidad ${i + 1}:`, unitData);
                         const unitResponse = await unitService.createUnit(unitData);
                         console.log(`Unidad ${i + 1} creada:`, unitResponse.data);
                     } catch (unitError) {
                         console.error(`Error al crear unidad ${i + 1}:`, unitError);
                         console.error("Respuesta del error:", unitError.response?.data);
+                        if (unitError.response && (unitError.response.status === 404 || unitError.response.status === 500)) {
+                            alert(`Error al crear unidad ${i + 1}. Posible causa: El usuario actual no tiene un perfil de Trabajador asociado para el registro en Kardex.`);
+                        }
                     }
                 }
 
 
                 navigate("/inventory")
             }
-        } catch (error){
+        } catch (error) {
             console.log("Something went wrong", error);
             alert("Error al guardar la herramienta. Por favor intenta nuevamente.");
 
         } finally {
             setLoading(false);
         }
-        
+
     };
 
- 
+
 
     useEffect(() => {
-        if(!isAdmin && !id){
+        if (!isAdmin && !id) {
             alert("No tienes permisos para añadir herramientas.");
             navigate("/inventory");
         }
@@ -135,14 +177,14 @@ const ToolAdd = () => {
                 console.log("Something went wrong", error);
             })
 
-        }else {
+        } else {
             setTitleToolForm("Añadir nueva herramienta")
             setStock(1);
 
         }
     }, [id]);
 
-       if (!isAdmin && !id) {
+    if (!isAdmin && !id) {
         return null;
     }
 
@@ -156,7 +198,7 @@ const ToolAdd = () => {
                 <Form.Control type="text" placeholder="Ingrese el nombre de la herramienta" value={toolName}
                     onChange={(e) => setName(e.target.value)}
                     required
-                    />
+                />
             </Form.Group>
 
             <Form.Group className="mb-3" controlId="formDescription">
@@ -165,7 +207,7 @@ const ToolAdd = () => {
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
                 />
-                
+
             </Form.Group>
 
             <Form.Group className="mb-3" controlId="formReplacementValue">
@@ -181,7 +223,7 @@ const ToolAdd = () => {
                         step="1"
                         required
                         disabled={!isAdmin}
-                        />
+                    />
                 </InputGroup>
 
             </Form.Group>
@@ -199,15 +241,14 @@ const ToolAdd = () => {
 
             <Form.Group className="mb-3" controlId="formStock">
                 <Form.Label>Stock</Form.Label>
-                <Form.Control 
-                    type="number" 
+                <Form.Control
+                    type="number"
                     value={stock}
                     onChange={(e) => setStock(parseInt(e.target.value) || 0)}
                     placeholder="0"
                     min="1"
                     step="1"
                     required
-                    disabled={!!id}
                 />
             </Form.Group>
 
@@ -215,8 +256,8 @@ const ToolAdd = () => {
                 <Form.Label>Precio Diario</Form.Label>
                 <InputGroup>
                     <InputGroup.Text>$</InputGroup.Text>
-                    <Form.Control 
-                        type="number" 
+                    <Form.Control
+                        type="number"
                         value={dailyPrice}
                         onChange={(e) => setDailyPrice(parseFloat(e.target.value) || 0)}
                         placeholder="0"
@@ -230,8 +271,8 @@ const ToolAdd = () => {
 
             <Form.Group className="mb-3" controlId="formImage">
                 <Form.Label>Imagen de la Herramienta</Form.Label>
-                <Form.Control 
-                    type="file" 
+                <Form.Control
+                    type="file"
                     accept="image/*"
                     onChange={handleImageChange}
                 />
@@ -271,7 +312,7 @@ const ToolAdd = () => {
             <Link to="/inventory" className="btn btn-secondary" style={{ marginLeft: "10px" }}>Cancelar</Link>
 
         </Form>
-        
+
     );
 
 

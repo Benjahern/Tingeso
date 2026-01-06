@@ -8,6 +8,13 @@ import com.example.inventory_service.Entity.ToolEntity;
 import com.example.inventory_service.Repository.ToolRepository;
 
 import java.util.List;
+import org.springframework.web.multipart.MultipartFile;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+import java.util.UUID;
 
 @Service
 public class ToolService {
@@ -60,6 +67,7 @@ public class ToolService {
             toolToUpdate.setImagePath(toolDetails.getImagePath());
         }
         if (toolDetails.getStock() != null) {
+            System.out.println("ToolService: Updating stock for tool " + toolId + " to " + toolDetails.getStock());
             toolToUpdate.setStock(toolDetails.getStock());
         }
 
@@ -83,6 +91,32 @@ public class ToolService {
         ToolEntity toolEntity = getToolById(id);
         toolEntity.setReplacementValue(replacementValue);
         return toolRepo.save(toolEntity);
+    }
+
+    @Transactional
+    public ToolEntity uploadImage(Long id, MultipartFile file) {
+        ToolEntity tool = getToolById(id);
+
+        if (file.isEmpty()) {
+            throw new RuntimeException("Cannot upload empty file");
+        }
+
+        try {
+            String fileName = UUID.randomUUID().toString() + "_" + file.getOriginalFilename();
+            Path uploadDir = Paths.get("uploads");
+            if (!Files.exists(uploadDir)) {
+                Files.createDirectories(uploadDir);
+            }
+
+            Path filePath = uploadDir.resolve(fileName);
+            Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+
+            tool.setImagePath("/uploads/" + fileName);
+            return toolRepo.save(tool);
+
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to store file", e);
+        }
     }
 
 }

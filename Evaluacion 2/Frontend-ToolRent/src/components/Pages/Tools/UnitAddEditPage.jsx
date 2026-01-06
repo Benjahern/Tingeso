@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate , useParams, useLocation } from 'react-router-dom';
+import { Link, useNavigate, useParams, useLocation } from 'react-router-dom';
 import unitService from '../../../services/unit.service';
 import Form from 'react-bootstrap/Form';
 
@@ -23,15 +23,19 @@ const UnitAddEditPage = () => {
             if (id) {
                 // editar
                 const confirmUpdate = window.confirm("¿Esta seguro que desea actualizar?");
-                if(!confirmUpdate){
+                if (!confirmUpdate) {
                     return;
                 }
                 const unit = { status, condition };
                 const response = await unitService.updateUnit(id, unit);
-                navigate( originToolId ? `/tools/${originToolId}` : '/tools' );
+                navigate(originToolId ? `/tools/${originToolId}` : '/tools');
 
             } else {
                 // crear
+
+                // 1. Update Tool Stock (REMOVED - Handled by Backend)
+
+                // 2. Create Units
                 const unitBase = { status, condition, tool: { toolId: Number(toolId) } };
                 await unitService.createUnit(unitBase);
                 ;
@@ -53,27 +57,27 @@ const UnitAddEditPage = () => {
     }
 
     useEffect(() => {
-    if (condition === "Dañada") {
-      setStatus("Dañado");
-    }
-  }, [condition]);
+        if (condition === "Dañada") {
+            setStatus("Dañado");
+        }
+    }, [condition]);
 
     useEffect(() => {
-            if (id) {
+        if (id) {
             // editar
             setTitleUnitForm("Editar unidad");
             unitService.getUnitById(id).then(response => {
                 const unitData = response.data;
                 setStatus(unitData.status);
                 setCondition(unitData.condition);
-                    // Si venimos por la ruta de edición, extraer el toolId desde la unidad cargada.
-                    if (unitData.tool && unitData.tool.toolId) {
-                        setOriginToolId(unitData.tool.toolId);
-                    }
+                // Si venimos por la ruta de edición, extraer el toolId desde la unidad cargada.
+                if (unitData.tool && unitData.tool.toolId) {
+                    setOriginToolId(unitData.tool.toolId);
+                }
             }).catch(error => {
                 console.log('Something went wrong', error);
             });
-        }else{
+        } else {
             setTitleUnitForm("Añadir unidad");
             setStatus("Disponible");
         }
@@ -88,7 +92,7 @@ const UnitAddEditPage = () => {
             <h3>{titleUnitForm}</h3>
             <Form.Group className="mb-3" controlId="formStatus">
                 <Form.Label>Estado</Form.Label>
-                <Form.Select 
+                <Form.Select
                     value={status}
                     onChange={(e) => setStatus(e.target.value)}
                     disabled={!id}
@@ -125,10 +129,10 @@ const UnitAddEditPage = () => {
 
             <button type="submit" className='outline-dark'>Guardar</button>
             {/* Usar originToolId resuelto; si no existe, enviar al listado de herramientas */}
-            <Link to={ originToolId ? `/tools/${originToolId}` : '/tools' } className="btn btn-secondary" style={{ marginLeft: "10px" }}>Cancelar</Link>
+            <Link to={originToolId ? `/tools/${originToolId}` : '/tools'} className="btn btn-secondary" style={{ marginLeft: "10px" }}>Cancelar</Link>
 
         </Form>
-        
+
     );
 }
 

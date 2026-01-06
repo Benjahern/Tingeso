@@ -18,10 +18,11 @@ public class LoanUnitEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "loanId", nullable = false)
-    private LoanEntity loan; //Mantiene relación JPA (mismo servicio)
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    private LoanEntity loan; // Mantiene relación JPA (mismo servicio)
 
     @Column(name = "unitId", nullable = false)
-    private Long unitId; //Solo el ID, NO el objeto UnitEntity
+    private Long unitId; // Solo el ID, NO el objeto UnitEntity
 
     @Column(name = "state")
     private String state;

@@ -65,29 +65,39 @@ public class ClientsService {
 
     @Transactional
     public ClientsEntity addDebt(Long id, Double amount) {
+        log.info("Adding debt to client {}: amount={}", id, amount);
         if (!clientsRepo.existsById(id)) {
             throw new EntityNotFoundException("Client with id " + id + " not found. Add debt failed.");
         } else {
-            if (amount <= 0) {
-                throw new RuntimeException("Amount must be greater than 0");
-
+            if (amount < 0) {
+                throw new RuntimeException("Amount cannot be negative");
+            }
+            if (amount == 0) {
+                return getClientById(id);
             }
             ClientsEntity client = getClientById(id);
-            client.setDebt(amount + client.getDebt());
-            return clientsRepo.save(client);
+            double oldDebt = client.getDebt();
+            client.setDebt(amount + oldDebt);
+            ClientsEntity savedClient = clientsRepo.save(client);
+            log.info("Client {} debt updated: {} + {} = {}", id, oldDebt, amount, savedClient.getDebt());
+            return savedClient;
         }
     }
 
     @Transactional
     public ClientsEntity payDebt(Long id, Double amount) {
+        log.info("Client {} paying debt: amount={}", id, amount);
         if (clientsRepo.existsById(id)) {
             if (amount <= 0) {
                 throw new RuntimeException("Amount can't be less than 0");
             }
             ClientsEntity client = getClientById(id);
-            if (client.getDebt() >= amount) {
-                client.setDebt(client.getDebt() - amount);
-                return clientsRepo.save(client);
+            double currentDebt = client.getDebt();
+            if (currentDebt >= amount) {
+                client.setDebt(currentDebt - amount);
+                ClientsEntity savedClient = clientsRepo.save(client);
+                log.info("Client {} paid debt: {} - {} = {}", id, currentDebt, amount, savedClient.getDebt());
+                return savedClient;
             } else {
                 throw new RuntimeException("Amount be less than the debt");
             }

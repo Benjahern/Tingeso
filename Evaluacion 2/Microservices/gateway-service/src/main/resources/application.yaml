@@ -35,3 +35,9 @@ spring.cloud.gateway:
       lower-case-service-id: true
   default-filters:
     - TokenRelay
+
+  routes:
+    - id: uploads-route
+      uri: lb://inventory-service
+      predicates:
+        - Path=/uploads/**

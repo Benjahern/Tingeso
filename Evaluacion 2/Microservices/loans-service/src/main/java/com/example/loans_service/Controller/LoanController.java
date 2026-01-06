@@ -109,7 +109,9 @@ public class LoanController {
                 mail = auth.getName();
             }
 
+            System.out.println("DEBUG: Calling getWorkerByMail for mail: " + mail);
             Long workerId = workerClient.getWorkerByMail(mail).getWorkerId();
+            System.out.println("DEBUG: Found workerId: " + workerId);
 
             Long clientId = Long.valueOf(request.get("clientId").toString());
             LocalDate startDate = LocalDate.parse(request.get("startDate").toString());
@@ -139,7 +141,7 @@ public class LoanController {
 
     @PostMapping("/{loanId}/return")
     @PreAuthorize("hasAnyRole('ADMIN','EMPLOYEE')")
-    public ResponseEntity<?> returnLoan(@PathVariable Long loanId, @RequestBody Map<Long, String> unitCondition) {
+    public ResponseEntity<?> returnLoan(@PathVariable Long loanId, @RequestBody Map<String, Object> requestBody) {
         try {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             String username = "";
@@ -153,9 +155,32 @@ public class LoanController {
 
             Long workerId = workerClient.getWorkerByMail(username).getWorkerId();
 
-            LoanEntity loan = loansService.returnLoan(loanId, workerId, unitCondition);
+            @SuppressWarnings("unchecked")
+            Map<String, String> rawConditions = (Map<String, String>) requestBody.get("unitCondition");
+            Map<Long, String> unitCondition = rawConditions.entrySet().stream()
+                    .collect(Collectors.toMap(
+                            e -> Long.valueOf(e.getKey()),
+                            Map.Entry::getValue));
+
+            @SuppressWarnings("unchecked")
+            Map<String, Number> rawDamages = (Map<String, Number>) requestBody.get("customDamages");
+            Map<Long, Double> customDamages = null;
+
+            System.out.println("DEBUG: Raw customDamages from request: " + rawDamages);
+
+            if (rawDamages != null) {
+                customDamages = rawDamages.entrySet().stream()
+                        .collect(Collectors.toMap(
+                                e -> Long.valueOf(e.getKey()),
+                                e -> e.getValue().doubleValue()));
+                System.out.println("DEBUG: Parsed customDamages: " + customDamages);
+            } else {
+                System.out.println("DEBUG: customDamages is null");
+            }
+            LoanEntity loan = loansService.returnLoan(loanId, workerId, unitCondition, customDamages);
             return ResponseEntity.ok(loan);
         } catch (Exception e) {
+            e.printStackTrace();
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
     }

@@ -1,7 +1,7 @@
 import httpClient from "../http-common";
 
 const getAllRoles = () => {
-    return httpClient.get("api/roles");
+    return httpClient.get("users-service/roles");
 };
 
 export default {

@@ -17,8 +17,10 @@ const keycloakProviderInitOptions = {
 
 
 ReactDOM.createRoot(document.getElementById('root')).render(
-  <ReactKeycloakProvider 
-    authClient={keycloak}>
+  <ReactKeycloakProvider
+    authClient={keycloak}
+    initOptions={keycloakInitOptions}
+  >
     <App />
   </ReactKeycloakProvider>
 )

@@ -9,7 +9,7 @@ import { PencilSquare, Trash, PersonPlusFill } from "react-bootstrap-icons";
 const WorkerPage = () => {
   const [workers, setWorkers] = useState([]);
   const [displayedWorkers, setDisplayedWorkers] = useState([]);
-  
+
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
@@ -20,7 +20,7 @@ const WorkerPage = () => {
   const init = (page = currentPage, size = pageSize) => {
     workerService.getAllWorkers().then(response => {
       const data = response.data;
-      
+
       // If backend returns a Spring Page-like object
       if (data && data.content && Array.isArray(data.content)) {
         setWorkers(data.content);
@@ -29,20 +29,20 @@ const WorkerPage = () => {
         setCurrentPage((data.number || 0) + 1);
         return;
       }
-      
+
       // If backend returns an array, compute client-side pages
       if (Array.isArray(data)) {
         setWorkers(data);
         const pages = Math.max(1, Math.ceil(data.length / size));
         setTotalPages(pages);
         setCurrentPage(Math.min(page, pages));
-        
+
         const start = (Math.min(page, pages) - 1) * size;
         const paged = data.slice(start, start + size);
         setDisplayedWorkers(paged);
         return;
       }
-      
+
       // Fallback
       const arr = data ? (Array.isArray(data) ? data : [data]) : [];
       setWorkers(arr);
@@ -79,8 +79,8 @@ const WorkerPage = () => {
     <div className="container mt-3">
       <div className="d-flex justify-content-between align-items-center mb-3">
         <h2>Trabajadores</h2>
-        <Button 
-          variant="success" 
+        <Button
+          variant="success"
           onClick={() => navigate('/employees/add')}
         >
           <PersonPlusFill className="me-2" />
@@ -100,20 +100,20 @@ const WorkerPage = () => {
         <tbody>
           {displayedWorkers.length > 0 ? (
             displayedWorkers.map(worker => (
-              <tr key={worker.userId}>
+              <tr key={worker.workerId}>
                 <td>{worker.name}</td>
                 <td>{worker.mail}</td>
                 <td>
                   {worker.rol && worker.rol.length > 0
-                    ? worker.rol.map(role => role.rolName).join(', ')
+                    ? worker.rol.join(', ')
                     : 'N/A'}
 
 
                 </td>
                 <td>
-                  
-                  <Button 
-                    variant="outline-danger" 
+
+                  <Button
+                    variant="outline-danger"
                     size="sm"
                     onClick={() => handleDelete(worker.id)}
                   >
@@ -136,17 +136,17 @@ const WorkerPage = () => {
           <span>Página {currentPage} de {totalPages}</span>
         </div>
         <div>
-          <Button 
-            variant="secondary" 
-            size="sm" 
+          <Button
+            variant="secondary"
+            size="sm"
             className="me-2"
             disabled={currentPage === 1}
             onClick={() => setCurrentPage(currentPage - 1)}
           >
             Anterior
           </Button>
-          <Button 
-            variant="secondary" 
+          <Button
+            variant="secondary"
             size="sm"
             disabled={currentPage === totalPages}
             onClick={() => setCurrentPage(currentPage + 1)}
@@ -155,8 +155,8 @@ const WorkerPage = () => {
           </Button>
         </div>
         <div>
-          <select 
-            className="form-select form-select-sm" 
+          <select
+            className="form-select form-select-sm"
             style={{ width: 'auto' }}
             value={pageSize}
             onChange={(e) => {

@@ -28,3 +28,7 @@ eureka:
       defaultZone: http://${EUREKA_HOST:localhost}:${EUREKA_PORT:8761}/eureka/
   instance:
     prefer-ip-address: true
+
+logging:
+  level:
+    org.springframework.web: DEBUG

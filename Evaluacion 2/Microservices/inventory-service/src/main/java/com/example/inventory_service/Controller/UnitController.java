@@ -129,6 +129,7 @@ public class UnitController {
         kardex.setWorkerId(worker.getWorkerId());
         kardex.setMovement("SALIDA_BAJA");
         kardex.setLoanId(null);
+        kardex.setStockBalance(tool.getStock() - 1);
         kardex.setComment("Unidad dada de baja por daño");
 
         kardexClient.createMovement(kardex);

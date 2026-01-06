@@ -34,7 +34,7 @@ public class ReportsService {
         // Obtener ranking básico de kardex-service
         List<Object[]> rawRanking = kardexClient.getRanking(fechaInicio, fechaFin);
 
-        List<RankingItemDto> enrichedRanking = new ArrayList<>();
+        java.util.Map<String, RankingItemDto> aggregationMap = new java.util.HashMap<>();
 
         for (Object[] item : rawRanking) {
             Long unitId = ((Number) item[0]).longValue();
@@ -43,26 +43,40 @@ public class ReportsService {
             // Obtener información de la unidad desde inventory-service
             try {
                 UnitDto unit = inventoryClient.getUnitById(unitId);
+                String toolName = unit.getTool().getToolName();
+                String category = unit.getTool().getCategory();
 
-                RankingItemDto dto = new RankingItemDto();
-                dto.setUnitId(unitId);
-                dto.setToolName(unit.getTool().getToolName());
-                dto.setCategory(unit.getTool().getCategory());
-                dto.setTotalSolicitudes(totalSolicitudes);
+                if (aggregationMap.containsKey(toolName)) {
+                    RankingItemDto existing = aggregationMap.get(toolName);
+                    existing.setTotalSolicitudes(existing.getTotalSolicitudes() + totalSolicitudes);
+                } else {
+                    RankingItemDto dto = new RankingItemDto();
+                    dto.setUnitId(unitId); // Guardamos un unitId de referencia, aunque ya no es único
+                    dto.setToolName(toolName);
+                    dto.setCategory(category);
+                    dto.setTotalSolicitudes(totalSolicitudes);
+                    aggregationMap.put(toolName, dto);
+                }
 
-                enrichedRanking.add(dto);
             } catch (Exception e) {
-                // Si no se puede obtener la info, agregar con nombre desconocido
+                // Si no se puede obtener la info, agregar como desconocido (sin agrupar por
+                // nombre si es desconocido, o agrupar por "Desconocido")
+                // En este caso, lo dejamos separado para no mezclar errores
                 RankingItemDto dto = new RankingItemDto();
                 dto.setUnitId(unitId);
                 dto.setToolName("Herramienta no encontrada");
                 dto.setCategory("N/A");
                 dto.setTotalSolicitudes(totalSolicitudes);
-                enrichedRanking.add(dto);
+                // Usamos unitId como clave para no colapsar todos los errores
+                aggregationMap.put("UNKNOWN_" + unitId, dto);
             }
         }
 
-        return enrichedRanking;
+        List<RankingItemDto> result = new ArrayList<>(aggregationMap.values());
+        // Ordenar por total de solicitudes descendente
+        result.sort((a, b) -> b.getTotalSolicitudes().compareTo(a.getTotalSolicitudes()));
+
+        return result;
     }
 
     /**

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import loanService from "../../../services/loans.service";
+import clientService from "../../../services/client.service";
 import Form from 'react-bootstrap/Form';
 import InputGroup from 'react-bootstrap/InputGroup';
 import Button from 'react-bootstrap/Button';
@@ -9,98 +10,124 @@ import Table from 'react-bootstrap/Table';
 import DateRangeFilter from '../../common/DateRangeFilter';
 
 const LoansPage = () => {
-    const [loans, setLoans] = useState([]);
-    const [searchTerm, setSearchTerm] = useState("");
-    const [searchType, setSearchType] = useState("name");
-    const [statusFilter, setStatusFilter] = useState("all");
-    const [startDate, setStartDate] = useState(null);
-    const [endDate, setEndDate] = useState(null);
-    const navigate = useNavigate();
+  const [loans, setLoans] = useState([]);
+  const [clientsMap, setClientsMap] = useState({});
+  const [searchTerm, setSearchTerm] = useState("");
+  const [searchType, setSearchType] = useState("name");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [startDate, setStartDate] = useState(null);
+  const [endDate, setEndDate] = useState(null);
+  const navigate = useNavigate();
 
-    const init = () => {
-        if (statusFilter === 'active') {
-            loanService.getActiveLoans().then(response => {
-                const data = filterByDateRange(response.data);
-                setLoans(data);
-            }).catch(error => console.log('Something went wrong', error));
-            return;
-        }
+  const loadClients = () => {
+    clientService.getAllClients()
+      .then(response => {
+        const map = {};
+        response.data.forEach(client => {
+          map[client.clientId] = client;
+        });
+        setClientsMap(map);
+      })
+      .catch(error => {
+        console.error("Error loading clients:", error);
+      });
+  };
 
-        if (statusFilter === 'inactive') {
-            loanService.getInactiveLoans().then( (response) => {
-                const data = filterByDateRange(response.data);
-                setLoans(data);
-            }).catch(error => console.log('Something went wrong', error));
-            return;
-        }
+  const init = () => {
+    loadClients();
+    if (statusFilter === 'active') {
+      loanService.getActiveLoans().then(response => {
+        const data = filterByDateRange(response.data);
+        setLoans(data);
+      }).catch(error => console.log('Something went wrong', error));
+      return;
+    }
 
-        loanService.getAllLoans().then(response => {
-            console.log('Printing loans data', response.data);
-            const data = filterByDateRange(response.data);
-            setLoans(data);
+    if (statusFilter === 'inactive') {
+      loanService.getInactiveLoans().then((response) => {
+        const data = filterByDateRange(response.data);
+        setLoans(data);
+      }).catch(error => console.log('Something went wrong', error));
+      return;
+    }
+
+    loanService.getAllLoans().then(response => {
+      console.log('Printing loans data', response.data);
+      let data = response.data;
+      if (!Array.isArray(data)) {
+        console.error("DEBUG: response.data is not an array:", data);
+        data = [];
+      }
+      data = filterByDateRange(data);
+      setLoans(data);
+    }).catch(error => {
+      console.log('Something went wrong', error);
+    });
+  };
+
+  const filterByDateRange = (loansData) => {
+    if (!startDate && !endDate) {
+      return loansData;
+    }
+
+    return loansData.filter(loan => {
+      //normalize
+      const loanTimestamp = new Date(loan.loanStart).setHours(0, 0, 0, 0);
+
+      if (startDate && endDate) {
+        const start = new Date(startDate).setHours(0, 0, 0, 0);
+        const end = new Date(endDate).setHours(23, 59, 59, 999);
+        return loanTimestamp >= start && loanTimestamp <= end;
+      } else if (startDate) {
+        const start = new Date(startDate).setHours(0, 0, 0, 0);
+        return loanTimestamp >= start;
+      } else if (endDate) {
+        const end = new Date(endDate).setHours(23, 59, 59, 999);
+        return loanTimestamp <= end;
+      }
+
+      return true;
+    });
+
+  };
+
+
+
+  useEffect(() => {
+    const timerId = setTimeout(() => {
+      if (searchTerm) {
+        loanService.searchLoans(searchType, searchTerm).then(response => {
+          let data = response.data;
+          // Apply client-side status filtering when searching
+          if (statusFilter !== 'all') {
+            const activeBool = statusFilter === 'active';
+            data = data.filter(l => l.active === activeBool);
+          }
+          data = filterByDateRange(data);
+          setLoans(data);
         }).catch(error => {
-            console.log('Something went wrong', error);
+          console.log('Something went wrong', error);
+          console.log("Error details:", error.response?.data);
         });
-    };
+      } else {
+        init();
+      }
+    }, 300);
 
-    const filterByDateRange = (loansData) => {
-        if (!startDate && !endDate) {
-        return loansData;
-        }
+    return () => clearTimeout(timerId);
+  }, [searchTerm, searchType, statusFilter, startDate, endDate]);
 
-        return loansData.filter(loan => {
-        //normalize
-        const loanTimestamp = new Date(loan.loanStart).setHours(0, 0, 0, 0);
-        
-        if (startDate && endDate) {
-            const start = new Date(startDate).setHours(0, 0, 0, 0);
-            const end = new Date(endDate).setHours(23, 59, 59, 999);
-            return loanTimestamp >= start && loanTimestamp <= end;
-        } else if (startDate) {
-            const start = new Date(startDate).setHours(0, 0, 0, 0);
-            return loanTimestamp >= start;
-        } else if (endDate) {
-            const end = new Date(endDate).setHours(23, 59, 59, 999);
-            return loanTimestamp <= end;
-        }
+  // Reload clients when the component mounts or when navigating back to it
+  useEffect(() => {
+    loadClients();
+  }, []);
 
-        return true;
-        });
+  const clearDateFilter = () => {
+    setStartDate(null);
+    setEndDate(null);
+  };
 
-    };
-
-   
-
-    useEffect(() => {
-        const timerId = setTimeout(() => {
-            if (searchTerm) {
-                loanService.searchLoans(searchType, searchTerm).then(response => {
-                    let data = response.data;
-                    // Apply client-side status filtering when searching
-                    if (statusFilter !== 'all') {
-                        const activeBool = statusFilter === 'active';
-                        data = data.filter(l => l.active === activeBool);
-                    }
-                    data = filterByDateRange(data);
-                    setLoans(data);
-                }).catch(error => {
-                    console.log('Something went wrong', error);
-                    console.log("Error details:", error.response?.data);
-                });
-            } else {
-                init();
-            }
-        }, 300);
-
-        return () => clearTimeout(timerId);
-    }, [searchTerm, searchType, statusFilter, startDate, endDate]);
-
-    const clearDateFilter = () => {
-        setStartDate(null);
-        setEndDate(null);
-    };
-
-    return (
+  return (
     <div className="container mt-5">
       <div className="card">
         <div className="card-header">
@@ -186,31 +213,34 @@ const LoansPage = () => {
                   </td>
                 </tr>
               ) : (
-                loans.map((loan) => (
-                  <tr key={loan.loanId}>
-                    <td>{loan.loanId}</td>
-                    <td>
-                      <Link to={`/loans/${loan.loanId}`}>
-                        {loan.client?.name || 'Cargando...'}
-                      </Link>
-                    </td>
-                    <td>{loan.client?.rut || 'Cargando...'}</td>
-                    <td>{new Date(loan.loanStart).toLocaleDateString('es-ES')}</td>
-                    <td>{new Date(loan.loanEnd).toLocaleDateString('es-ES')}</td>
-                    <td>
-                      {new Intl.NumberFormat('es-CL', {
-                        style: 'currency',
-                        currency: 'CLP',
-                        minimumFractionDigits: 0
-                      }).format(loan.price)}
-                    </td>
-                    <td>
-                      <span className={`badge ${loan.active ? 'bg-success' : 'bg-secondary'}`}>
-                        {loan.active ? 'Activo' : 'Inactivo'}
-                      </span>
-                    </td>
-                  </tr>
-                ))
+                loans.map((loan) => {
+                  const client = clientsMap[loan.clientId];
+                  return (
+                    <tr key={loan.loanId}>
+                      <td>{loan.loanId}</td>
+                      <td>
+                        <Link to={`/loans/${loan.loanId}`}>
+                          {client ? client.name : 'Cargando...'}
+                        </Link>
+                      </td>
+                      <td>{client ? client.rut : 'Cargando...'}</td>
+                      <td>{new Date(loan.loanStart).toLocaleDateString('es-ES')}</td>
+                      <td>{new Date(loan.loanEnd).toLocaleDateString('es-ES')}</td>
+                      <td>
+                        {new Intl.NumberFormat('es-CL', {
+                          style: 'currency',
+                          currency: 'CLP',
+                          minimumFractionDigits: 0
+                        }).format(loan.price)}
+                      </td>
+                      <td>
+                        <span className={`badge ${loan.active ? 'bg-success' : 'bg-secondary'}`}>
+                          {loan.active ? 'Activo' : 'Inactivo'}
+                        </span>
+                      </td>
+                    </tr>
+                  )
+                })
               )}
             </tbody>
           </Table>

@@ -41,6 +41,13 @@ public class UnitService {
 
         Long toolId = unit.getTool().getToolId();
         ToolEntity tool = toolRepo.findById(toolId).orElseThrow(() -> new EntityNotFoundException("Tool Not Found"));
+        System.out.println(
+                "UnitService: creating unit for tool " + toolId + ". Tool Stock from DB is: " + tool.getStock());
+
+        // Update Stock
+        tool.setStock(tool.getStock() + 1);
+        toolRepo.save(tool);
+
         unit.setTool(tool);
         unit.setStatus("Disponible");
 
@@ -51,7 +58,8 @@ public class UnitService {
         kardexDto.setWorkerId(workerId);
         kardexDto.setMovement("INGRESO_INVENTARIO");
         kardexDto.setLoanId(null);
-        kardexDto.setComment("Registro de unidad en nel sistema. Serie: " + newUnit.getUnitId());
+        kardexDto.setStockBalance(tool.getStock());
+        kardexDto.setComment("Registro de unidad en el sistema. Serie: " + newUnit.getUnitId());
         kardexDto.setType(1);
         kardexClient.createMovement(kardexDto);
 
@@ -99,6 +107,7 @@ public class UnitService {
             kardexDto.setWorkerId(workerId);
             kardexDto.setMovement("AJUSTE_ESTADO");
             kardexDto.setLoanId(null);
+            kardexDto.setStockBalance(updatedUnit.getTool().getStock());
 
             kardexClient.createMovement(kardexDto);
         }

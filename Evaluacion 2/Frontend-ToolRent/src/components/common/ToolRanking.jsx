@@ -13,7 +13,7 @@ const ToolRanking = () => {
     const now = new Date();
     const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
     const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0);
-    
+
     setStartDate(firstDay);
     setEndDate(lastDay);
   }, []); // Solo al montar
@@ -32,7 +32,7 @@ const ToolRanking = () => {
   const fetchRanking = async () => {
     try {
       const params = {};
-      
+
       if (startDate) {
         params.fechaInicio = startDate.toISOString().split('T')[0];
       }
@@ -40,14 +40,14 @@ const ToolRanking = () => {
         params.fechaFin = endDate.toISOString().split('T')[0];
       }
 
-      
+
       const response = await kardexService.getRankingHerramientas(params);
-      
+
 
       if (response.data && Array.isArray(response.data)) {
         const formattedData = response.data.map(item => ({
-          toolName: item[0].toolName,
-          cantidad: item[1]
+          toolName: item.toolName,
+          cantidad: item.totalSolicitudes
         }));
         setTools(formattedData);
       } else {
@@ -62,7 +62,7 @@ const ToolRanking = () => {
     const now = new Date();
     const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
     const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0);
-    
+
     setStartDate(firstDay);
     setEndDate(lastDay);
   };
@@ -70,7 +70,7 @@ const ToolRanking = () => {
   return (
     <div className="tool-ranking-container">
       <h2>Ranking de Herramientas Más Solicitadas</h2>
-      
+
       <DateRangeFilter
         startDate={startDate}
         endDate={endDate}

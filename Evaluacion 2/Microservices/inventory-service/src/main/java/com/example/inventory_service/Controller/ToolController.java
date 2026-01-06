@@ -6,6 +6,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -43,6 +44,7 @@ public class ToolController {
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN','EMPLOYEE')")
     public ResponseEntity<ToolEntity> createTool(@RequestBody ToolEntity tool) {
+        System.out.println("Creating tool: " + tool.getToolName() + " with stock: " + tool.getStock());
         ToolEntity newTool = toolService.saveTool(tool);
         return ResponseEntity.status(HttpStatus.CREATED).body(newTool);
     }
@@ -50,6 +52,7 @@ public class ToolController {
     @PutMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN','EMPLOYEE')")
     public ResponseEntity<ToolEntity> updateTool(@PathVariable Long id, @RequestBody ToolEntity toolDetails) {
+        System.out.println("ToolController: Received update request for ID " + id + ": " + toolDetails);
         ToolEntity updatedTool = toolService.updateTool(id, toolDetails);
         return ResponseEntity.ok(updatedTool);
     }
@@ -73,6 +76,13 @@ public class ToolController {
     public ResponseEntity<Void> deleteTool(@PathVariable Long id) {
         toolService.deleteToolById(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/{id}/image")
+    @PreAuthorize("hasAnyRole('ADMIN','EMPLOYEE')")
+    public ResponseEntity<ToolEntity> uploadImage(@PathVariable Long id, @RequestParam("file") MultipartFile file) {
+        ToolEntity updatedTool = toolService.uploadImage(id, file);
+        return ResponseEntity.ok(updatedTool);
     }
 
 }

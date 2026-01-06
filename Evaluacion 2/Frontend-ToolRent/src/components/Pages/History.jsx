@@ -5,6 +5,8 @@ import Button from 'react-bootstrap/Button';
 import Card from 'react-bootstrap/Card';
 import Badge from 'react-bootstrap/Badge';
 import kardexService from '../../services/kardex.service';
+import workerService from '../../services/worker.service';
+import unitService from '../../services/unit.service';
 import DateRangeFilter from '../common/DateRangeFilter';
 import KardexExcel from '../common/KardexExcel';
 import { FileEarmarkSpreadsheet, BoxSeam, Funnel } from 'react-bootstrap-icons';
@@ -16,7 +18,7 @@ const KardexList = () => {
     const [allKardex, setAllKardex] = useState([]);
     const [filteredKardex, setFilteredKardex] = useState([]);
     const [loading, setLoading] = useState(true);
-    
+
     const navigate = useNavigate();
     const { exportToExcel } = KardexExcel();
 
@@ -46,41 +48,73 @@ const KardexList = () => {
     };
 
     // Cargar todos los kardex
-    const init = () => {
+    const init = async () => {
         setLoading(true);
-        kardexService.getAllKardex().then(response => {
-            console.log('Printing all kardex data', response.data);
-            setAllKardex(response.data);
-            setFilteredKardex(response.data);
+        try {
+            const [kardexRes, workersRes, unitsRes] = await Promise.all([
+                kardexService.getAllKardex(),
+                workerService.getAllWorkers(),
+                unitService.getAllUnits()
+            ]);
+
+            const kardexData = kardexRes.data;
+            const workersData = workersRes.data;
+            const unitsData = unitsRes.data;
+
+            // Map IDs to Objects
+            const enrichedKardex = kardexData.map(record => {
+                const worker = workersData.find(w => w.workerId === record.workerId);
+                const unit = unitsData.find(u => u.unitId === record.unitId);
+                return {
+                    ...record,
+                    worker: worker,
+                    unit: unit
+                };
+            });
+
+            console.log('Printing enriched kardex data', enrichedKardex);
+            setAllKardex(enrichedKardex);
+            setFilteredKardex(enrichedKardex);
 
             // Extraer valores únicos para los filtros
-            const uniqueMovements = [...new Set(response.data.map(k => k.movement))].filter(Boolean);
-            const uniqueWorkers = [...new Set(response.data.map(k => k.worker?.name))].filter(Boolean);
-            const uniqueTools = [...new Set(response.data.map(k => k.tool?.name))].filter(Boolean);
+            const uniqueMovements = [...new Set(enrichedKardex.map(k => k.movement))].filter(Boolean);
+            const uniqueWorkers = [...new Set(enrichedKardex.map(k => k.worker?.name))].filter(Boolean);
+            const uniqueTools = [...new Set(enrichedKardex.map(k => k.unit?.tool?.toolName))].filter(Boolean);
 
             setMovements(uniqueMovements.sort());
             setWorkers(uniqueWorkers.sort());
             setTools(uniqueTools.sort());
-            
+
             setLoading(false);
-        }).catch(error => {
-            console.log('Error loading kardex', error);
+        } catch (error) {
+            console.log('Error loading data', error);
             setLoading(false);
-        });
+        }
+    };
+
+    // Helper to parse dates (handles "2024-01-01" string or [2024, 1, 1] array)
+    const parseDate = (dateVal) => {
+        if (!dateVal) return new Date();
+        if (Array.isArray(dateVal)) {
+            // [year, month, day, hour, minute, second]
+            // Note: Month in JS Date is 0-indexed (0=Jan, 1=Feb)
+            return new Date(dateVal[0], dateVal[1] - 1, dateVal[2], dateVal[3] || 0, dateVal[4] || 0, dateVal[5] || 0);
+        }
+        return new Date(dateVal);
     };
 
     // Aplicar filtros
     useEffect(() => {
-        let filtered = [...allKardex];
+        let filtered = [...allKardex].sort((a, b) => b.kardexId - a.kardexId); // Sort newest first
 
         // Filtro por fechas
         if (startDate && endDate) {
             filtered = filtered.filter(record => {
-                const recordDate = new Date(record.date);
+                const recordDate = parseDate(record.createdAt);
                 const recordDateOnly = new Date(recordDate.getFullYear(), recordDate.getMonth(), recordDate.getDate());
                 const startDateOnly = new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate());
                 const endDateOnly = new Date(endDate.getFullYear(), endDate.getMonth(), endDate.getDate());
-                
+
                 return recordDateOnly >= startDateOnly && recordDateOnly <= endDateOnly;
             });
         }
@@ -95,7 +129,7 @@ const KardexList = () => {
             filtered = filtered.filter(record => record.worker?.name === workerFilter);
         }
 
-        
+
 
         setFilteredKardex(filtered);
     }, [startDate, endDate, movementFilter, workerFilter, toolFilter, allKardex]);
@@ -109,9 +143,9 @@ const KardexList = () => {
         const dataToExport = filteredKardex.map(record => ({
             kardexId: record.kardexId,
             toolName: record.unit?.tool?.toolName || 'N/A',
-            toolId: record.unit?.tool?.toolId|| 'N/A',
+            toolId: record.unit?.tool?.toolId || 'N/A',
             movement: record.movement,
-            date: new Date(record.date).toLocaleDateString(),
+            date: parseDate(record.createdAt).toLocaleDateString(),
             unitId: record.unit?.unitId || 'N/A',
             stockBalance: record.stockBalance,
             workerName: record.worker?.name || 'N/A',
@@ -174,8 +208,8 @@ const KardexList = () => {
                             Kardex General
                         </h2>
                     </div>
-                    <Button 
-                        variant="success" 
+                    <Button
+                        variant="success"
                         onClick={handleExport}
                         disabled={filteredKardex.length === 0}
                     >
@@ -193,8 +227,8 @@ const KardexList = () => {
                                 Filtros
                             </h5>
                             {(startDate || endDate || movementFilter || workerFilter || toolFilter) && (
-                                <Button 
-                                    variant="outline-secondary" 
+                                <Button
+                                    variant="outline-secondary"
                                     size="sm"
                                     onClick={clearAllFilters}
                                 >
@@ -208,9 +242,9 @@ const KardexList = () => {
                             <DateRangeFilter
                                 startDate={startDate}
                                 endDate={endDate}
-                                onStartDateChange={setStartDate}  
-                                onEndDateChange={setEndDate}      
-                                onClear={clearDateFilter}         
+                                onStartDateChange={setStartDate}
+                                onEndDateChange={setEndDate}
+                                onClear={clearDateFilter}
                             />
                         </div>
 
@@ -219,7 +253,7 @@ const KardexList = () => {
                             <Col md={4}>
                                 <Form.Group>
                                     <Form.Label>Tipo de Movimiento</Form.Label>
-                                    <Form.Select 
+                                    <Form.Select
                                         value={movementFilter}
                                         onChange={(e) => setMovementFilter(e.target.value)}
                                     >
@@ -236,7 +270,7 @@ const KardexList = () => {
                             <Col md={4}>
                                 <Form.Group>
                                     <Form.Label>Trabajador</Form.Label>
-                                    <Form.Select 
+                                    <Form.Select
                                         value={workerFilter}
                                         onChange={(e) => setWorkerFilter(e.target.value)}
                                     >
@@ -250,7 +284,7 @@ const KardexList = () => {
                                 </Form.Group>
                             </Col>
 
-                        
+
                         </Row>
                     </div>
 
@@ -291,7 +325,7 @@ const KardexList = () => {
                                                 <small className="text-muted">ID: {record.unit?.tool?.toolId || 'N/A'}</small>
                                             </td>
                                             <td>{getMovementBadge(record.movement)}</td>
-                                            <td>{new Date(record.date).toLocaleDateString()}</td>
+                                            <td>{parseDate(record.createdAt).toLocaleDateString()}</td>
                                             <td>{record.unit?.unitId || 'N/A'}</td>
                                             <td>
                                                 <Badge bg="secondary">{record.stockBalance}</Badge>
@@ -305,8 +339,8 @@ const KardexList = () => {
                                 ) : (
                                     <tr>
                                         <td colSpan="9" className="text-center text-muted py-4">
-                                            {allKardex.length === 0 
-                                                ? 'No hay registros de kardex disponibles' 
+                                            {allKardex.length === 0
+                                                ? 'No hay registros de kardex disponibles'
                                                 : 'No hay registros que coincidan con los filtros seleccionados'}
                                         </td>
                                     </tr>

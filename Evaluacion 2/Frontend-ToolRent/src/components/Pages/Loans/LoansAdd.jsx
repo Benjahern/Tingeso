@@ -25,19 +25,19 @@ const LoansAdd = () => {
     const [active, setActive] = useState(true);
     const [selectedTools, setSelectedTools] = useState([]);
 
-    
+
 
     const location = useLocation();
     const [selectedToolsIds, setSelectedToolsIds] = useState([]);
     const navigate = useNavigate();
-    
+
     useEffect(() => {
         if (location.state?.selectedToolsIds) {
             const uniqueIds = [...new Set(location.state.selectedToolsIds)];
-            
+
             console.log("Selected Tools IDs (original):", location.state.selectedToolsIds);
             console.log("Selected Tools IDs (únicos):", uniqueIds);
-            
+
             setSelectedToolsIds(uniqueIds);
             loadToolsDetails(uniqueIds);
         }
@@ -57,7 +57,7 @@ const LoansAdd = () => {
             const uniqueToolIds = [...new Set(toolIds)];
             console.log("Tool IDs recibidos:", toolIds);
             console.log("Tool IDs únicos:", uniqueToolIds);
-            
+
             const toolsPromises = uniqueToolIds.map(id => toolService.get(id));
             const toolsResponses = await Promise.all(toolsPromises);
             const toolsData = toolsResponses.map(response => response.data);
@@ -69,15 +69,15 @@ const LoansAdd = () => {
 
 
     const handleCreateLoan = () => {
-        if(!client){
+        if (!client) {
             alert("Por favor, selecciona un cliente antes de continuar.");
             return;
         }
-        if (selectedToolsIds.length === 0){
+        if (selectedToolsIds.length === 0) {
             alert("Por favor, selecciona al menos una herramienta para el préstamo.");
             return;
-        } 
-        if (new Date(endDate) < new Date(startDate)){
+        }
+        if (new Date(endDate) < new Date(startDate)) {
             alert("La fecha de fin no puede ser anterior a la fecha de inicio.");
             return;
         }
@@ -85,8 +85,18 @@ const LoansAdd = () => {
         // Enviar fechas como 'YYYY-MM-DD' porque el backend usa LocalDate.parse
         const toIsoDate = (d) => new Date(d).toISOString().slice(0, 10);
 
+        console.log("DEBUG: client object selected:", client);
+        // Intentar obtener ID de varias formas posibles
+        const finalClientId = client.clientId || client.id || client.idClient;
+
+        if (!finalClientId) {
+            console.error("DEBUG: Client ID could not be found in object:", client);
+            alert("Error: No se pudo identificar el ID del cliente seleccionado.");
+            return;
+        }
+
         const loanData = {
-            clientId: client.userId,
+            clientId: finalClientId,
             storeId: 1, // Aquí deberías obtener el ID de la tienda seleccionada (worker)
             startDate: toIsoDate(startDate),
             endDate: toIsoDate(endDate),
@@ -122,7 +132,7 @@ const LoansAdd = () => {
 
     const calculatedMinEndDate = startDate ? new Date(new Date(startDate).getTime() + 86400000) : minDate;
 
-    
+
 
     return (
         <div className='container mt-4'>
@@ -132,7 +142,7 @@ const LoansAdd = () => {
                     <div className='mb-4'>
                         <h5 className='mb-3'>Seleccionar Cliente</h5>
                         {!client ? (
-                            <ClientSearchTypeahead 
+                            <ClientSearchTypeahead
                                 onClientSelect={handleClientSelect}
                                 selectedClient={client}
                                 label="Buscar Cliente"
@@ -147,16 +157,16 @@ const LoansAdd = () => {
                                             <div>
                                                 <h5 className="mb-1">{client.name}</h5>
                                                 <p className="mb-0 text-muted">
-                                                    <strong>RUT:</strong> {client.rut} 
+                                                    <strong>RUT:</strong> {client.rut}
                                                 </p>
                                             </div>
                                         </div>
-                                        <Button variant="outline-danger" 
+                                        <Button variant="outline-danger"
                                             size='sm'
                                             onClick={handleClearSelect}
-                                            >
-                                                <XCircleFill className='me-1' />
-                                            </Button>
+                                        >
+                                            <XCircleFill className='me-1' />
+                                        </Button>
                                     </div>
 
                                 </Card.Body>
@@ -178,7 +188,7 @@ const LoansAdd = () => {
                                     </div>
                                     <div className="list-group">
                                         {selectedTools.map((tool) => (
-                                            <div 
+                                            <div
                                                 key={tool.toolId}
                                                 className="list-group-item d-flex justify-content-between align-items-center"
                                             >
@@ -188,8 +198,8 @@ const LoansAdd = () => {
                                                         Categoria: {tool.category} |
                                                         Precio/dia: {tool.dailyPrice}
                                                     </div>
-                                                </div>                                                    
-                                    
+                                                </div>
+
                                             </div>
                                         ))}
 
@@ -207,7 +217,7 @@ const LoansAdd = () => {
                     <div className='mb-4'>
                         <h5 className='mb-3'>Fechas del Préstamo</h5>
                         <div className='row'>
-                            
+
                             <DateRangeFilter
                                 startDate={startDate}
                                 endDate={endDate}
@@ -229,17 +239,17 @@ const LoansAdd = () => {
 
                     <Button type='submit' variant='outline-dark'
                         onClick={handleCreateLoan}
-                        disabled={!client || selectedToolsIds.length === 0} 
-                        >Crear Préstamo
+                        disabled={!client || selectedToolsIds.length === 0}
+                    >Crear Préstamo
                     </Button>
-                            
-                    
-                    
-                    
+
+
+
+
 
                 </Card.Body>
             </Card>
-        
+
         </div>
     );
 };

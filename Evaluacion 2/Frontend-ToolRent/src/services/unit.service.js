@@ -1,35 +1,35 @@
 import httpClient from "../http-common";
 
 const getAllUnits = () => {
-  return httpClient.get(`/api/units`);
+  return httpClient.get(`/inventory-service/units`);
 };
 
 const updateUnit = (id, unitData) => {
-  return httpClient.put(`/api/units/${id}`, unitData);
+  return httpClient.put(`/inventory-service/units/${id}`, unitData);
 };
 
 const getUnitById = (id) => {
-  return httpClient.get(`/api/units/${id}`);
+  return httpClient.get(`/inventory-service/units/${id}`);
 };
 
 const getUnitsByToolId = (toolId) => {
-  return httpClient.get(`/api/units/by-tool/${toolId}`);
+  return httpClient.get(`/inventory-service/units/by-tool/${toolId}`);
 };
 
 const searchUnits = (filters) => {
-  return httpClient.get(`/api/units/search`, { params: filters });
+  return httpClient.get(`/inventory-service/units/search`, { params: filters });
 };
 
 const createUnit = (unitData) => {
-  return httpClient.post(`/api/units`, unitData);
+  return httpClient.post(`/inventory-service/units`, unitData);
 };
 
 const decommisionUnit = (unitId, data) => {
-  return httpClient.post(`/api/units/${unitId}/decommission`, data);
+  return httpClient.post(`/inventory-service/units/${unitId}/decommission`, data);
 };
 
 const updateUnitStatus = (id, statusData) => {
-  return httpClient.patch(`api/units/${id}/status`, statusData);
+  return httpClient.patch(`inventory-service/units/${id}/status`, statusData);
 };
 
 export default {

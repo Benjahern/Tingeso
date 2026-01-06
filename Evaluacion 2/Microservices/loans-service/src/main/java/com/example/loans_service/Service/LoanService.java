@@ -206,6 +206,12 @@ public class LoanService {
             newLoanUnit.setLoan(savedLoan);
             savedLoan.getLoanUnits().add(newLoanUnit);
 
+            // Update tool stock using Feign client
+            ToolDto tool = toolClient.getTool(toolId);
+            int newStock = tool.getStock() - 1;
+            tool.setStock(newStock);
+            toolClient.updateTool(toolId, tool);
+
             // Register movement using Feign client
             String comment = "Salida en prestamo Id:" + savedLoan.getLoanId() + " para el cliente id: " + clientId;
             KardexDto kardexDto = new KardexDto();
@@ -215,12 +221,8 @@ public class LoanService {
             kardexDto.setMovement("SALIDA_PRESTAMO");
             kardexDto.setComment(comment);
             kardexDto.setType(-1);
+            kardexDto.setStockBalance(newStock);
             kardexClient.createMovement(kardexDto);
-
-            // Update tool stock using Feign client
-            ToolDto tool = toolClient.getTool(toolId);
-            tool.setStock(tool.getStock() - 1);
-            toolClient.updateTool(toolId, tool);
         }
 
         if (countLoansActive(clientId) + 1 == 5) {
@@ -231,7 +233,9 @@ public class LoanService {
     }
 
     @Transactional
-    public LoanEntity returnLoan(Long loanId, Long workerId, Map<Long, String> unitCondition) {
+    public LoanEntity returnLoan(Long loanId, Long workerId, Map<Long, String> unitCondition,
+            Map<Long, Double> customDamages) {
+        System.out.println("DEBUG: returnLoan called with customDamages: " + customDamages);
 
         WorkerDto worker = workerClient.getWorker(workerId);
         LoanEntity loan = getLoanById(loanId);
@@ -262,6 +266,11 @@ public class LoanService {
 
         loan.setActive(false);
         loan.setReturnLoan(returnDate);
+
+        // Clear principal debt
+        double principalDebt = loan.getPrice();
+        clientClient.payDebt(clientId, Map.of("amount", principalDebt));
+
         double damagedCost = 0;
 
         for (LoanUnitEntity loanUnit : loan.getLoanUnits()) {
@@ -281,6 +290,26 @@ public class LoanService {
                 damagedCost += replacementValue;
                 // Add damaged cost to client debt
                 clientClient.addDebt(clientId, Map.of("amount", replacementValue));
+            } else if ("Regular".equalsIgnoreCase(condition)) {
+                unit.setStatus("Disponible");
+                unit.setCondition("Regular");
+
+                System.out.println("DEBUG: Processing Regular condition for unit " + unitId);
+                if (customDamages != null) {
+                    System.out.println(
+                            "DEBUG: customDamages contains unit " + unitId + "? " + customDamages.containsKey(unitId));
+                    if (customDamages.containsKey(unitId)) {
+                        double damageAmount = customDamages.get(unitId);
+                        System.out.println("DEBUG: damageAmount for unit " + unitId + ": " + damageAmount);
+                        if (damageAmount > 0) {
+                            damagedCost += damageAmount;
+                            System.out.println("DEBUG: Adding debt of " + damageAmount + " to client " + clientId);
+                            clientClient.addDebt(clientId, Map.of("amount", damageAmount));
+                        }
+                    }
+                } else {
+                    System.out.println("DEBUG: customDamages is null");
+                }
             } else {
                 unit.setStatus("Disponible");
                 unit.setCondition(condition);
@@ -289,6 +318,12 @@ public class LoanService {
             // Update unit via Feign client
             unitClient.updateUnit(unitId, unit);
             loanUnit.setReturnDate(returnDate);
+
+            // Update tool stock using Feign client
+            ToolDto tool = unit.getTool();
+            int newStock = tool.getStock() + 1;
+            tool.setStock(newStock);
+            toolClient.updateTool(tool.getToolId(), tool);
 
             // Register movement using Feign client
             String comment = "Devolución del préstamo ID: " + loan.getLoanId() + ". Condición de entrega: " + condition;
@@ -299,12 +334,15 @@ public class LoanService {
             kardexDto.setMovement("ENTRADA_DEVOLUCION");
             kardexDto.setComment(comment);
             kardexDto.setType(1);
+            kardexDto.setStockBalance(newStock);
             kardexClient.createMovement(kardexDto);
+        }
 
-            // Update tool stock using Feign client
-            ToolDto tool = unit.getTool();
-            tool.setStock(tool.getStock() + 1);
-            toolClient.updateTool(tool.getToolId(), tool);
+        // Pay remaining debt (Fine + DamagedCost) to clear everything as requested
+        double remainingDebtToPay = (double) totalFine + damagedCost;
+        if (remainingDebtToPay > 0) {
+            System.out.println("DEBUG: Paying remaining debt (Fine + Damage): " + remainingDebtToPay);
+            clientClient.payDebt(clientId, Map.of("amount", remainingDebtToPay));
         }
 
         // Check if client can be unrestricted

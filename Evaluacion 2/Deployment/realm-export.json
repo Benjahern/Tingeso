@@ -1,0 +1,57 @@
+{
+    "realm": "tingeso",
+    "enabled": true,
+    "users": [
+        {
+            "id": "91932bbe-206e-43e7-b79b-cce0800d2cdc",
+            "username": "benja@gmail.com",
+            "email": "benja@gmail.com",
+            "enabled": true,
+            "credentials": [
+                {
+                    "type": "password",
+                    "value": "12345678"
+                }
+            ],
+            "realmRoles": [
+                "ADMIN",
+                "EMPLOYEE"
+            ],
+            "clientRoles": {
+                "realm-management": [
+                    "view-users",
+                    "query-users",
+                    "query-groups",
+                    "query-realms"
+                ]
+            }
+        }
+    ],
+    "roles": {
+        "realm": [
+            {
+                "name": "ADMIN",
+                "description": "Administrator role"
+            },
+            {
+                "name": "EMPLOYEE",
+                "description": "Employee role"
+            }
+        ]
+    },
+    "clients": [
+        {
+            "clientId": "frontend-client",
+            "enabled": true,
+            "publicClient": true,
+            "redirectUris": [
+                "http://localhost:5173/*"
+            ],
+            "webOrigins": [
+                "*"
+            ],
+            "standardFlowEnabled": true,
+            "directAccessGrantsEnabled": true
+        }
+    ]
+}

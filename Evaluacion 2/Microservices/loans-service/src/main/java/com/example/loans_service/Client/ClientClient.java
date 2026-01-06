@@ -22,6 +22,9 @@ public interface ClientClient {
     @PostMapping("/clients/{id}/debt/add")
     ClientDto addDebt(@PathVariable Long id, @RequestBody Map<String, Double> body);
 
+    @PostMapping("/clients/{id}/debt/pay")
+    ClientDto payDebt(@PathVariable Long id, @RequestBody Map<String, Double> body);
+
     @PostMapping("/clients/{id}/state")
     ClientDto setState(@PathVariable Long id, @RequestParam String state);
 }

@@ -27,7 +27,7 @@ services:
   keycloak:
     image: quay.io/keycloak/keycloak:23.0
     container_name: keycloak
-    command: start-dev
+    command: start-dev --import-realm
     environment:
       - KEYCLOAK_ADMIN=${KEYCLOAK_ADMIN:-admin}
       - KEYCLOAK_ADMIN_PASSWORD=${KEYCLOAK_ADMIN_PASSWORD:-admin}
@@ -38,6 +38,8 @@ services:
       - KC_HOSTNAME=localhost
       - KC_HOSTNAME_PORT=8090
       - KC_HOSTNAME_STRICT=false
+    volumes:
+      - ./realm-export.json:/opt/keycloak/data/import/realm-export.json
     ports:
       - "8090:8080"
     networks: [ micro ]

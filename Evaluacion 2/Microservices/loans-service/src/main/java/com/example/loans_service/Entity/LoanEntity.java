@@ -37,5 +37,6 @@ public class LoanEntity {
     private Long fine;
 
     @OneToMany(mappedBy = "loan", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<LoanUnitEntity> loanUnits; // ✅ Esta lista SÍ se mantiene (mismo servicio)
+    private List<LoanUnitEntity> loanUnits = new java.util.ArrayList<>(); // ✅ Esta lista SÍ se mantiene (mismo
+                                                                          // servicio)
 }

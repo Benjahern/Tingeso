@@ -17,7 +17,7 @@ const ClientPage = () => {
 
     const [searchTerm, setSearchTerm] = useState("");
 
-    const [searchType, setSearchType] = useState("name"); 
+    const [searchType, setSearchType] = useState("name");
 
     // Pagination state
     const [currentPage, setCurrentPage] = useState(1);
@@ -157,14 +157,14 @@ const ClientPage = () => {
         console.log('Printing id', id);
         navigate(`/clients/add/${id}`);
 
-    
+
     };
 
     const handleViewLoans = (client) => {
         navigate(`/clients/${client.userId}/loans`, {
             state: {
-            clientName: client.name,
-            clientRut: client.rut,
+                clientName: client.name,
+                clientRut: client.rut,
             },
         });
     };
@@ -177,11 +177,11 @@ const ClientPage = () => {
                     Añadir Cliente
                 </Button>
             </Link>
-            
+
 
             {/*     HACER COMPONENTE DE ESTE DIV */}
             <div className="d-flex" style={{ width: '600px' }}>
-                <Form.Select 
+                <Form.Select
                     value={searchType}
                     onChange={(e) => setSearchType(e.target.value)}
                     style={{ width: '120px' }}
@@ -190,7 +190,7 @@ const ClientPage = () => {
                     <option value="rut">RUT</option>
                     <option value="state">Estado</option>
                 </Form.Select>
-                
+
                 <InputGroup className="ms-2">
                     <InputGroup.Text><Search /></InputGroup.Text>
                     <Form.Control
@@ -200,14 +200,14 @@ const ClientPage = () => {
                         onChange={(e) => setSearchTerm(e.target.value)}
                     />
                 </InputGroup>
-                
+
                 <Form.Select className="ms-2" value={pageSize} onChange={(e) => { setPageSize(Number(e.target.value)); setCurrentPage(1); }} style={{ width: '120px' }}>
                     <option value={5}>5 / pág</option>
                     <option value={10}>10 / pág</option>
                     <option value={20}>20 / pág</option>
                 </Form.Select>
             </div>
-            
+
             {/*     HASTA AQUI HACER COMPONENTE DE ESTE DIV */}
             <div className="w-100 d-flex justify-content-center">
                 <Table striped bordered hover responsive >
@@ -223,11 +223,11 @@ const ClientPage = () => {
                             <th className="text-center">Acciones</th>
                         </tr>
                     </thead>
-                
+
 
                     <tbody>
                         {displayedClients.map(client => (
-                            <tr key={client.userId}>
+                            <tr key={client.clientId}>
                                 <td>{client.rut}</td>
                                 <td>
                                     <Button variant="link" onClick={() => handleViewLoans(client)}>
@@ -250,10 +250,10 @@ const ClientPage = () => {
                                     </span>
                                 </td>
                                 <td className="text-center">
-                                    <Button variant="outline-warning" onClick={() => handleEdit(client.userId)}>
+                                    <Button variant="outline-warning" onClick={() => handleEdit(client.clientId)}>
                                         <PencilSquare />
                                     </Button>
-                                    <Button variant="outline-danger" onClick={() => handleDelete(client.userId)}>
+                                    <Button variant="outline-danger" onClick={() => handleDelete(client.clientId)}>
                                         <Trash />
                                     </Button>
                                 </td>
@@ -264,7 +264,7 @@ const ClientPage = () => {
 
                 </Table>
             </div>
-            
+
             {/* Pagination controls */}
             <div className="d-flex justify-content-center align-items-center mt-3">
                 <Button variant="outline-dark" className="me-2" disabled={currentPage <= 1} onClick={() => setCurrentPage(1)}>Primera</Button>
@@ -273,7 +273,7 @@ const ClientPage = () => {
                 <Button variant="outline-dark" className="ms-2" disabled={currentPage >= totalPages} onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}>Siguiente</Button>
                 <Button variant="outline-dark" className="ms-2" disabled={currentPage >= totalPages} onClick={() => setCurrentPage(totalPages)}>Última</Button>
             </div>
-                
+
         </div>
     );
 

@@ -1,19 +1,19 @@
 import httpClient from "../http-common";
 
 const getAllKardex = () => {
-    return httpClient.get("api/kardex/getAll");
+    return httpClient.get("kardex-service/kardex");
 }
 
 const getKardexByUnitId = (unitId) => {
-    return httpClient.get(`api/kardex/history/unit/${unitId}`);
-} 
+    return httpClient.get(`kardex-service/kardex/unit/${unitId}`);
+}
 
 const getKardexByToolId = (toolId) => {
-    return httpClient.get(`api/kardex/history/tool/${toolId}`);
+    return httpClient.get(`kardex-service/kardex/tool/${toolId}`);
 }
 
 const getRankingHerramientas = (params) => {
-  return httpClient.get("api/kardex/ranking", { params });
+    return httpClient.get("reports-service/reports/ranking", { params });
 };
 
 

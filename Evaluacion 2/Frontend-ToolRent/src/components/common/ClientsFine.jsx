@@ -18,7 +18,7 @@ const ClientsWithFine = () => {
       setClients(response.data);
     } catch (err) {
       console.error('Error fetching clients with fine:', err);
-    } 
+    }
   };
 
   const indexOfLastClient = currentPage * clientsPerPage;
@@ -41,7 +41,7 @@ const ClientsWithFine = () => {
   return (
     <div className="w-100">
       <h2>Clientes con Atraso</h2>
-      
+
       {clients.length === 0 ? (
         <p>No se encontraron clientes con multas.</p>
       ) : (
@@ -62,7 +62,7 @@ const ClientsWithFine = () => {
             </thead>
             <tbody>
               {currentClients.map((client) => (
-                <tr key={client.userId}>
+                <tr key={client.clientId}>
                   <td>{client.name}</td>
                   <td>{client.phone}</td>
                   <td>
@@ -71,7 +71,7 @@ const ClientsWithFine = () => {
                     </span>
                   </td>
                   <td>${client.debt?.toFixed(2) || '0.00'}</td>
-                  
+
                 </tr>
               ))}
             </tbody>
@@ -79,14 +79,14 @@ const ClientsWithFine = () => {
 
           {totalPages > 1 && (
             <div className="pagination">
-              <button 
-                onClick={goToPreviousPage} 
+              <button
+                onClick={goToPreviousPage}
                 disabled={currentPage === 1}
                 className="pagination-btn"
               >
                 &#8592; Anterior
               </button>
-              
+
               <div className="pagination-numbers">
                 {[...Array(totalPages)].map((_, index) => (
                   <button
@@ -98,9 +98,9 @@ const ClientsWithFine = () => {
                   </button>
                 ))}
               </div>
-              
-              <button 
-                onClick={goToNextPage} 
+
+              <button
+                onClick={goToNextPage}
                 disabled={currentPage === totalPages}
                 className="pagination-btn"
               >

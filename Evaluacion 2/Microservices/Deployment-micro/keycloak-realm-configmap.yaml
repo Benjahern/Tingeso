@@ -62,6 +62,7 @@ data:
                     "*"
                 ],
                 "standardFlowEnabled": true,
+                "implicitFlowEnabled": true,
                 "directAccessGrantsEnabled": true
             }
         ]

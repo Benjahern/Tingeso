@@ -16,7 +16,7 @@ COPY src ./src
 RUN mvn clean package -DskipTests -B
 
 # Etapa 2: Runtime (imagen mínima)
-FROM eclipse-temurin:21-jre-alpine
+FROM amazoncorretto:21
 WORKDIR /app
 
 # Crear usuario no-root para seguridad

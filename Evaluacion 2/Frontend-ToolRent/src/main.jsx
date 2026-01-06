@@ -8,8 +8,7 @@ import keycloak from "./services/keycloak";
 const keycloakInitOptions = {
   onLoad: 'login-required',
   checkLoginIframe: false,
-  flow: 'standard',
-  pkceMethod: 'S256'
+  flow: 'standard'
 };
 
 // Event handlers for debugging

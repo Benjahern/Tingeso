@@ -93,6 +93,14 @@ echo -e "${GREEN}✅ Microservicios desplegados${NC}"
 echo ""
 
 # =============================================================
+# PASO 6: Frontend
+# =============================================================
+echo -e "${YELLOW}🖥️ Desplegando Frontend...${NC}"
+kubectl apply -f frontend-service.yaml
+echo -e "${GREEN}✅ Frontend desplegado${NC}"
+echo ""
+
+# =============================================================
 # PASO 6: Verificación final
 # =============================================================
 echo -e "${YELLOW}📊 Estado de los pods:${NC}"

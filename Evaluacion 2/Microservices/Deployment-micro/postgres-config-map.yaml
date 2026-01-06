@@ -4,5 +4,7 @@ metadata:
   name: postgres-config
 data:
   POSTGRES_DB: "tingesoDb"
+  POSTGRES_USER: "admin"
+  POSTGRES_PASSWORD: "admin"
   POSTGRES_HOST: "postgres-service"
   POSTGRES_PORT: "5432"

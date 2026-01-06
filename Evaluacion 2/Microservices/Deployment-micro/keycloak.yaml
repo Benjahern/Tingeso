@@ -30,7 +30,7 @@ spec:
         - name: KC_DB
           value: "postgres"
         - name: KC_DB_URL
-          value: "jdbc:postgresql://postgres-service:5432/tingeso_db"
+          value: "jdbc:postgresql://postgres-service:5432/tingesoDb"
         - name: KC_DB_USERNAME
           valueFrom:
             secretKeyRef:
@@ -61,5 +61,5 @@ spec:
   ports:
   - port: 8080
     targetPort: 8080
-    nodePort: 30090
+    nodePort: 31000
   type: NodePort

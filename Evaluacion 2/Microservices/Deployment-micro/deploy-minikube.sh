@@ -20,7 +20,7 @@ echo ""
 echo -e "${YELLOW}📋 Verificando Minikube...${NC}"
 if ! minikube status | grep -q "Running"; then
     echo -e "${RED}❌ Minikube no está corriendo. Iniciándolo...${NC}"
-    minikube start --cpus=4 --memory=8192 --driver=kvm2
+    minikube start --cpus=8 --memory=7500 --driver=kvm2
 fi
 echo -e "${GREEN}✅ Minikube OK${NC}"
 echo ""

@@ -16,45 +16,44 @@ import java.util.List;
 @EnableWebFluxSecurity
 public class SecurityConfig {
 
-    @Bean
-    public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) {
-        http
-                .csrf(csrf -> csrf.disable())
-                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-                .authorizeExchange(exchanges -> exchanges
-                        .pathMatchers("/actuator/**").permitAll()
-                        .pathMatchers("/eureka/**").permitAll()
-                        .pathMatchers("/uploads/**").permitAll()
-                        .anyExchange().authenticated())
-                .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt -> {
-                }));
+        @Bean
+        public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) {
+                http
+                                .csrf(csrf -> csrf.disable())
+                                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                                .authorizeExchange(exchanges -> exchanges
+                                                .pathMatchers("/actuator/**").permitAll()
+                                                .pathMatchers("/eureka/**").permitAll()
+                                                .pathMatchers("/uploads/**").permitAll()
+                                                .anyExchange().authenticated())
+                                .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt -> {
+                                }));
 
-        return http.build();
-    }
+                return http.build();
+        }
 
-    @Bean
-    public CorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of(
-                "http://localhost:5173", // Vite dev server
-                "http://localhost:3000", // Alternative dev port
-                "http://127.0.0.1:5173",
-                "http://127.0.0.1:3000",
-                "http://192.168.49.2:30080", // Minikube Docker driver
-                "http://192.168.39.83:30080", // Minikube KVM2 driver actual
-                "http://192.168.39.83:30000", // Gateway port desde frontend
-                "http://192.168.39.83:30080" // Minikube KVM2 driver alternativo
-        ));
-        configuration.setAllowedOriginPatterns(List.of(
-                "http://192.168.*:*", // Cualquier IP de red local Minikube
-                "http://127.0.0.1:*" // Cualquier puerto en localhost
-        ));
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
-        configuration.setAllowedHeaders(List.of("*"));
-        configuration.setAllowCredentials(true);
+        @Bean
+        public CorsConfigurationSource corsConfigurationSource() {
+                CorsConfiguration configuration = new CorsConfiguration();
+                configuration.setAllowedOrigins(List.of(
+                                "http://localhost:5173", // Vite dev server
+                                "http://localhost:3000", // Alternative dev port
+                                "http://127.0.0.1:5173",
+                                "http://127.0.0.1:3000",
+                                "http://192.168.49.2:30080", // Minikube Docker driver
+                                "http://192.168.39.241:30080", // Minikube KVM2 driver actual
+                                "http://192.168.39.241:30000" // Gateway port desde frontend
+                ));
+                configuration.setAllowedOriginPatterns(List.of(
+                                "http://192.168.*:*", // Cualquier IP de red local Minikube
+                                "http://127.0.0.1:*" // Cualquier puerto en localhost
+                ));
+                configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
+                configuration.setAllowedHeaders(List.of("*"));
+                configuration.setAllowCredentials(true);
 
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", configuration);
-        return source;
-    }
+                UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+                source.registerCorsConfiguration("/**", configuration);
+                return source;
+        }
 }

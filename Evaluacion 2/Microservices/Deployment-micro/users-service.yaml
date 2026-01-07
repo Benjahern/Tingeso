@@ -61,6 +61,14 @@ spec:
                 configMapKeyRef:
                   name: postgres-config
                   key: POSTGRES_DB
+            - name: KEYCLOAK_URL
+              value: "http://keycloak:8080"
+            - name: SERVER_ERROR_INCLUDE_STACKTRACE
+              value: "always"
+            - name: LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_WEB
+              value: "DEBUG"
+            - name: LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_SECURITY
+              value: "DEBUG"
             - name: POSTGRES_USER
               valueFrom:
                 secretKeyRef:

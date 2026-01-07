@@ -16,7 +16,7 @@ COPY src ./src
 RUN mvn clean package -DskipTests -B
 
 # Etapa 2: Runtime (imagen mínima)
-FROM public.ecr.aws/amazoncorretto/amazoncorretto:21-alpine
+FROM public.ecr.aws/amazoncorretto/amazoncorretto:21-alpine-jdk
 WORKDIR /app
 
 # Crear usuario no-root para seguridad

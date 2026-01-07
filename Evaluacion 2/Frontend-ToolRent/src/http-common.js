@@ -13,8 +13,12 @@ const api = axios.create({
 
 api.interceptors.request.use(async (config) => {
     console.log(`HTTP Request: ${config.method.toUpperCase()} ${config.url}`, config.data);
-    if (keycloak.authenticated) {
-        await keycloak.updateToken(30);
+    if (keycloak.authenticated && keycloak.token) {
+        try {
+            await keycloak.updateToken(30);
+        } catch (error) {
+            console.warn("Token refresh failed (likely due to insecure context), proceeding with existing token.", error);
+        }
         config.headers.Authorization = `Bearer ${keycloak.token}`;
     }
     return config;

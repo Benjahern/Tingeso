@@ -62,6 +62,10 @@ kubectl apply -f keycloak.yaml
 echo -e "${GREEN}✅ Keycloak desplegado${NC}"
 echo ""
 
+# Ver logs de Keycloak si hay error
+echo -e "${YELLOW}🔍 Verificando logs de Keycloak...${NC}"
+kubectl logs -l app=keycloak --tail=50
+
 # =============================================================
 # PASO 4: Infraestructura (Eureka, Config, Gateway)
 # =============================================================

@@ -161,7 +161,7 @@ const ClientPage = () => {
     };
 
     const handleViewLoans = (client) => {
-        navigate(`/clients/${client.userId}/loans`, {
+        navigate(`/clients/${client.clientId}/loans`, {
             state: {
                 clientName: client.name,
                 clientRut: client.rut,

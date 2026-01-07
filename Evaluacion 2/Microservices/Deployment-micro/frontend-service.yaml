@@ -15,7 +15,7 @@ spec:
       containers:
         - name: frontend
           image: bigbenj4/frontend-toolrent:latest
-          imagePullPolicy: Always
+          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 80
           resources:

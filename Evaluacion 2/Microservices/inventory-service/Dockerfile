@@ -4,7 +4,7 @@
 # =============================================================
 
 # Etapa 1: Build
-FROM public.ecr.aws/docker/library/maven:3.9-amazoncorretto-21 AS build
+FROM public.ecr.aws/docker/library/maven:3.9-eclipse-temurin-21-alpine AS build
 WORKDIR /app
 
 # Copiar pom.xml y descargar dependencias (caché de Docker)
@@ -16,7 +16,7 @@ COPY src ./src
 RUN mvn clean package -DskipTests -B
 
 # Etapa 2: Runtime (imagen mínima)
-FROM public.ecr.aws/amazoncorretto/amazoncorretto:21-alpine-jdk
+FROM public.ecr.aws/docker/library/eclipse-temurin:21-jre-alpine
 WORKDIR /app
 
 # Crear usuario no-root para seguridad

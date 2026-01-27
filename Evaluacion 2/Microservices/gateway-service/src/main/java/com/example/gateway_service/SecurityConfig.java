@@ -22,12 +22,15 @@ public class SecurityConfig {
                                 .csrf(csrf -> csrf.disable())
                                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                                 .authorizeExchange(exchanges -> exchanges
+                                                // Rutas públicas (sin autenticación)
                                                 .pathMatchers("/actuator/**").permitAll()
                                                 .pathMatchers("/eureka/**").permitAll()
                                                 .pathMatchers("/uploads/**").permitAll()
+                                                // Todas las demás rutas requieren autenticación
                                                 .anyExchange().authenticated())
-                                .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt -> {
-                                }));
+                                .oauth2ResourceServer(oauth2 -> oauth2
+                                                .jwt(jwt -> {})
+                                );
 
                 return http.build();
         }

@@ -41,12 +41,23 @@ spec:
                 configMapKeyRef:
                   name: microservices-config
                   key: EUREKA_PORT
+            # URL externa de Keycloak (accesible desde navegador y Gateway)
             - name: KEYCLOAK_URL
-              value: "http://keycloak-service:8080"
+              valueFrom:
+                configMapKeyRef:
+                  name: microservices-config
+                  key: KEYCLOAK_EXTERNAL_URL
+            # IMPORTANTE: Ambas URIs deben ser la URL EXTERNA para que el issuer coincida
             - name: SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI
-              value: "http://keycloak-service:8080/realms/tingeso/protocol/openid-connect/certs"
+              valueFrom:
+                configMapKeyRef:
+                  name: microservices-config
+                  key: KEYCLOAK_JWK_SET_URI
             - name: SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI
-              value: "http://192.168.39.241:31000/realms/tingeso"
+              valueFrom:
+                configMapKeyRef:
+                  name: microservices-config
+                  key: KEYCLOAK_ISSUER_URI
 ---
 apiVersion: v1
 kind: Service

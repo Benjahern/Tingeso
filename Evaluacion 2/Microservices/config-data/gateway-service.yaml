@@ -16,4 +16,69 @@ spring:
       discovery:
         locator:
           enabled: true
-          lower-case-service-id: true 
+          lower-case-service-id: true
+      # Rutas específicas
+      routes:
+        # Ruta de uploads - Acceso PÚBLICO (sin TokenRelay)
+        - id: uploads-route
+          uri: lb://inventory-service
+          predicates:
+            - Path=/uploads/**
+          # Sin filtros - acceso público
+        
+        # Rutas con autenticación
+        - id: inventory-service
+          uri: lb://inventory-service
+          predicates:
+            - Path=/inventory-service/**
+          filters:
+            - StripPrefix=1
+            - TokenRelay
+        
+        - id: clients-service
+          uri: lb://clients-service
+          predicates:
+            - Path=/clients-service/**
+          filters:
+            - StripPrefix=1
+            - TokenRelay
+        
+        - id: loans-service
+          uri: lb://loans-service
+          predicates:
+            - Path=/loans-service/**
+          filters:
+            - StripPrefix=1
+            - TokenRelay
+        
+        - id: kardex-service
+          uri: lb://kardex-service
+          predicates:
+            - Path=/kardex-service/**
+          filters:
+            - StripPrefix=1
+            - TokenRelay
+        
+        - id: rates-service
+          uri: lb://rates-service
+          predicates:
+            - Path=/rates-service/**
+          filters:
+            - StripPrefix=1
+            - TokenRelay
+        
+        - id: reports-service
+          uri: lb://reports-service
+          predicates:
+            - Path=/reports-service/**
+          filters:
+            - StripPrefix=1
+            - TokenRelay
+        
+        - id: users-service
+          uri: lb://users-service
+          predicates:
+            - Path=/users-service/**
+          filters:
+            - StripPrefix=1
+            - TokenRelay

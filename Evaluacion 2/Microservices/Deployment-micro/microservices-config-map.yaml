@@ -16,5 +16,11 @@ data:
   POSTGRES_DB: "tingeso_db"
   URL_DB: "jdbc:postgresql://postgres-service:5432"
   
-  # Keycloak
+  # Keycloak - URLs centralizadas
+  # URL interna (para comunicación entre pods)
   KEYCLOAK_URL: "http://keycloak-service:8080"
+  # URL externa (accesible desde navegador - CAMBIAR SI LA IP DE MINIKUBE CAMBIA)
+  KEYCLOAK_EXTERNAL_URL: "http://192.168.39.241:31000"
+  # URIs para validación JWT (deben coincidir con el issuer del token)
+  KEYCLOAK_ISSUER_URI: "http://192.168.39.241:31000/realms/tingeso"
+  KEYCLOAK_JWK_SET_URI: "http://192.168.39.241:31000/realms/tingeso/protocol/openid-connect/certs"

@@ -33,11 +33,71 @@ spring.cloud.gateway:
     locator:
       enabled: true
       lower-case-service-id: true
-  default-filters:
-    - TokenRelay
+  # NOTA: TokenRelay se aplica por ruta, no globalmente
+  # default-filters:
+  #   - TokenRelay
 
   routes:
+    # Ruta de uploads - Acceso PÚBLICO (sin TokenRelay, sin autenticación)
     - id: uploads-route
       uri: lb://inventory-service
       predicates:
         - Path=/uploads/**
+      # Sin filtros de autenticación - acceso público para imágenes
+    
+    # Rutas con autenticación - incluyen TokenRelay
+    - id: inventory-service
+      uri: lb://inventory-service
+      predicates:
+        - Path=/inventory-service/**
+      filters:
+        - StripPrefix=1
+        - TokenRelay
+    
+    - id: clients-service
+      uri: lb://clients-service
+      predicates:
+        - Path=/clients-service/**
+      filters:
+        - StripPrefix=1
+        - TokenRelay
+    
+    - id: loans-service
+      uri: lb://loans-service
+      predicates:
+        - Path=/loans-service/**
+      filters:
+        - StripPrefix=1
+        - TokenRelay
+    
+    - id: kardex-service
+      uri: lb://kardex-service
+      predicates:
+        - Path=/kardex-service/**
+      filters:
+        - StripPrefix=1
+        - TokenRelay
+    
+    - id: rates-service
+      uri: lb://rates-service
+      predicates:
+        - Path=/rates-service/**
+      filters:
+        - StripPrefix=1
+        - TokenRelay
+    
+    - id: reports-service
+      uri: lb://reports-service
+      predicates:
+        - Path=/reports-service/**
+      filters:
+        - StripPrefix=1
+        - TokenRelay
+    
+    - id: users-service
+      uri: lb://users-service
+      predicates:
+        - Path=/users-service/**
+      filters:
+        - StripPrefix=1
+        - TokenRelay

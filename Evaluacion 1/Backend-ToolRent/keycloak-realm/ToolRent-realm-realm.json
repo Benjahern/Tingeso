@@ -36,11 +36,15 @@
         "http://localhost:5173/*",
         "http://127.0.0.1:5173/*",
         "http://localhost:8090/*",
-        "http://127.0.0.1:8090/*"
+        "http://127.0.0.1:8090/*",
+        "https://toolrent/*",
+        "https://auth.toolrent/*"
       ],
       "webOrigins": [
         "http://localhost:5173",
         "http://127.0.0.1:5173",
+        "https://toolrent",
+        "https://auth.toolrent",
         "+"
       ],
       "protocol": "openid-connect",

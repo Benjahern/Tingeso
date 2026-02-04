@@ -1,0 +1,9 @@
+tls:
+  stores:
+    default:
+      defaultCertificate:
+        certFile: /certs/toolrent.pem
+        keyFile: /certs/toolrent-key.pem
+  certificates:
+    - certFile: /certs/toolrent.pem
+      keyFile: /certs/toolrent-key.pem

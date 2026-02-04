@@ -22,7 +22,7 @@ services:
   keycloak:
     image: quay.io/keycloak/keycloak:22.0
     container_name: toolrent-keycloak-prod
-    command: start-dev --import-realm
+    command: start-dev --import-realm --proxy=edge --hostname-strict=false
     environment:
       KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN_USER}
       KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASS}
@@ -31,11 +31,19 @@ services:
       KC_DB_URL_DATABASE: ${DB_NAME}
       KC_DB_USERNAME: ${DB_USER}
       KC_DB_PASSWORD: ${DB_PASS}
-      KC_HOSTNAME: ${DOMAIN_NAME}
-      KC_HOSTNAME_STRICT: "false"
+      KC_HOSTNAME_URL: https://auth.${DOMAIN_NAME}
+      KC_HOSTNAME_ADMIN_URL: https://auth.${DOMAIN_NAME}
       KC_HTTP_ENABLED: "true"
-    ports:
-      - "8080:8080"
+    # Keycloak will be routed by Traefik (no host port exposed)
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.keycloak.rule=Host(`auth.${DOMAIN_NAME}`)"
+      - "traefik.http.routers.keycloak.entrypoints=websecure"
+      - "traefik.http.routers.keycloak.tls=true"
+      - "traefik.http.routers.keycloak-http.rule=Host(`auth.${DOMAIN_NAME}`)"
+      - "traefik.http.routers.keycloak-http.entrypoints=web"
+      - "traefik.http.routers.keycloak-http.middlewares=redirect-to-https@docker"
+      - "traefik.http.services.keycloak.loadbalancer.server.port=8080"
     volumes:
       - ${KEYCLOAK_REALM_PATH:-../Backend-ToolRent/keycloak-realm}:/opt/keycloak/data/import  
     networks:
@@ -54,7 +62,7 @@ services:
 
 
   toolrent-backend-1:
-    image: ${BACKEND_IMAGE_NAME:-bigbenj4/toolrent-backend}:latest  
+    image: ${BACKEND_IMAGE_NAME:-bigbenj4/toolrent-backend}:${BACKEND_IMAGE_TAG:-latest}
     build:
       context: ../Backend-ToolRent
       dockerfile: Dockerfile 
@@ -65,9 +73,10 @@ services:
       DB_USER: ${DB_USER}
       DB_PASS: ${DB_PASS}
       APP_UPLOAD_DIR: /uploads
-      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://${DOMAIN_NAME}:8080/realms/ToolRent-realm
+      # When published, Keycloak will be available at auth.${DOMAIN_NAME} via HTTPS
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: https://auth.${DOMAIN_NAME}/realms/ToolRent-realm
       SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: http://keycloak:8080/realms/ToolRent-realm/protocol/openid-connect/certs
-      REDIRECT_URI: http://${DOMAIN_NAME}:5173*
+      REDIRECT_URI: https://${DOMAIN_NAME}/*
       SPRING_SQL_INIT_MODE: always
       SPRING_JPA_DEFER_DATASOURCE_INITIALIZATION: true
     deploy:
@@ -75,6 +84,16 @@ services:
       replicas: 3
     expose:
       - "8090"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.toolrent-backend.rule=Host(`${DOMAIN_NAME}`) && PathPrefix(`/api`)"
+      - "traefik.http.routers.toolrent-backend.entrypoints=websecure"
+      - "traefik.http.routers.toolrent-backend.tls=true"
+      - "traefik.http.routers.toolrent-backend-http.rule=Host(`${DOMAIN_NAME}`) && PathPrefix(`/api`)"
+      - "traefik.http.routers.toolrent-backend-http.entrypoints=web"
+      - "traefik.http.routers.toolrent-backend-http.middlewares=redirect-to-https@docker"
+      - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
+      - "traefik.http.services.toolrent-backend.loadbalancer.server.port=8090"
     networks:
         - toolrent-network
     depends_on:
@@ -94,41 +113,62 @@ services:
     restart: unless-stopped
 
   toolrent-frontend-1:
-    image: ${FRONTEND_IMAGE_NAME:-bigbenj4/toolrent-frontend}:latest
+    image: ${FRONTEND_IMAGE_NAME:-bigbenj4/toolrent-frontend}:${FRONTEND_IMAGE_TAG:-latest}
     build:
       context: ../Frontend-ToolRent
       dockerfile: Dockerfile
     networks:
       - toolrent-network
-    ports:
-      - "5173:5173"
-    # Healthcheck simplificado para el frontend
+    expose:
+      - "5173"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.toolrent-frontend.rule=Host(`${DOMAIN_NAME}`)"
+      - "traefik.http.routers.toolrent-frontend.entrypoints=websecure"
+      - "traefik.http.routers.toolrent-frontend.tls=true"
+      - "traefik.http.routers.toolrent-frontend-http.rule=Host(`${DOMAIN_NAME}`)"
+      - "traefik.http.routers.toolrent-frontend-http.entrypoints=web"
+      - "traefik.http.routers.toolrent-frontend-http.middlewares=redirect-to-https@docker"
+      - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
+      - "traefik.http.services.toolrent-frontend.loadbalancer.server.port=5173"
+    # Healthcheck para el frontend (nginx)
     healthcheck:
-      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:5173 || exit 1"]
+      test: ["CMD-SHELL", "curl -f http://localhost:5173/ || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 10
       start_period: 30s
     restart: unless-stopped
 
-  nginx:
-    image: nginx
-    container_name: toolrent-nginx
+  # NOTE: nginx removed from host-level exposure. Traefik handles edge routing and TLS.
+
+  traefik:
+    image: traefik:v2.10
+    container_name: toolrent-traefik
+    command:
+      - --api.dashboard=true
+      - --api.insecure=true
+      - --providers.docker=true
+      - --providers.docker.exposedbydefault=false
+      - --providers.docker.network=deployment_toolrent-network
+      - --entryPoints.web.address=:80
+      - --entryPoints.websecure.address=:443
+      - --providers.file.filename=/etc/traefik/dynamic.yml
     ports:
-      - "80:80" 
+      - "80:80"
+      - "443:443"
+      - "8081:8080" # Traefik dashboard (mapped to host 8081 to avoid Keycloak 8080)
     volumes:
-      - ${NGINX_CONF_PATH:-../Backend-ToolRent/nginx.conf}:/etc/nginx/conf.d/default.conf    
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./certs:/certs:ro
+      - ./traefik/dynamic.yml:/etc/traefik/dynamic.yml:ro
     networks:
       - toolrent-network
-    depends_on:
-      toolrent-backend-1:
-        condition: service_healthy
-      toolrent-frontend-1:
-        condition: service_healthy
     restart: unless-stopped
 
 volumes:
   postgres_data:
+  traefik_acme:
 
 networks:
   toolrent-network:

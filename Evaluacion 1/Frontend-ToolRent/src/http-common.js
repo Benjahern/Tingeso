@@ -1,10 +1,8 @@
 import axios from "axios";
 import keycloak from "./services/keycloak";
 
-const toolRentBackendPort = import.meta.env.VITE_TOOLRENT_BACKEND;
-
 const api = axios.create({
-    baseURL: `http://localhost:80`,
+    baseURL: import.meta.env.VITE_API_BASE_URL || "http://localhost:80/api",
     headers: {
         "Content-Type": "application/json"
     }

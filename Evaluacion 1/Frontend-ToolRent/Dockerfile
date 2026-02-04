@@ -1,22 +1,32 @@
-# 1. Usar una imagen base de Node.js (LTS version recomendada)
-# 'alpine' es una versión ligera de Linux
-FROM node:20-alpine
+# Stage 1: Build the React app
+FROM node:20-alpine AS build
 
-# 2. Establecer el directorio de trabajo dentro del contenedor
 WORKDIR /app
 
-# 3. Copiar los archivos de dependencias primero (para aprovechar la caché de Docker)
+# Copy package files and install dependencies
 COPY package*.json ./
-
-# 4. Instalar las dependencias
 RUN npm install
 
-# 5. Copiar el resto del código fuente
+# Copy source code and build
 COPY . .
+RUN npm run build
 
-# 6. Exponer el puerto que usa tu framework (Vite suele usar 5173, React/Next 3000)
-# Ajusta este número según lo que diga tu consola al correr npm run dev localmente
-EXPOSE 5173 
+# Stage 2: Serve with nginx
+FROM nginx:alpine
 
-# 7. Ejecutar el comando de desarrollo
-CMD ["npm", "run", "dev", "--", "--host"]
+# Copy built assets from build stage
+COPY --from=build /app/dist /usr/share/nginx/html
+
+# Copy custom nginx config for SPA routing
+RUN echo 'server { \
+    listen 5173; \
+    root /usr/share/nginx/html; \
+    index index.html; \
+    location / { \
+        try_files $uri $uri/ /index.html; \
+    } \
+}' > /etc/nginx/conf.d/default.conf
+
+EXPOSE 5173
+
+CMD ["nginx", "-g", "daemon off;"]
